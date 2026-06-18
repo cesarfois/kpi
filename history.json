@@ -1,0 +1,130 @@
+[
+  {
+    "id": "0c20cf67-cf58-4e54-8f0c-a7b69bc762dd",
+    "scheduleId": "71de5fb4-9ee9-482e-9735-f039dcdc0a77",
+    "scheduleName": "Exports",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T19:36:12.774Z"
+  },
+  {
+    "id": "37894b42-c603-4228-86f2-a00775319b36",
+    "scheduleId": "71de5fb4-9ee9-482e-9735-f039dcdc0a77",
+    "scheduleName": "Exports",
+    "status": "SUCCESS",
+    "message": "Sucesso. 1842 docs com 23536 linhas.",
+    "timestamp": "2026-03-09T19:36:45.861Z"
+  },
+  {
+    "id": "e3d1b1a4-53cd-467f-afb3-5bb41e577401",
+    "scheduleId": "c5054a83-5b60-44bc-80a5-f1b43ac118ad",
+    "scheduleName": "2025 para frente",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T19:46:42.082Z"
+  },
+  {
+    "id": "fb169c2e-7a97-45bc-8152-364447f71370",
+    "scheduleId": "c5054a83-5b60-44bc-80a5-f1b43ac118ad",
+    "scheduleName": "2025 para frente",
+    "status": "SUCCESS",
+    "message": "Sucesso. 12140 docs com 165302 linhas.",
+    "timestamp": "2026-03-09T19:49:43.174Z"
+  },
+  {
+    "id": "d95f2088-f985-44bc-8c14-fce36aafa444",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T19:50:20.636Z"
+  },
+  {
+    "id": "a66687e5-a10f-4376-ac44-b1df9f3e74b8",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "SUCCESS",
+    "message": "Sucesso. 197 docs com 59308 linhas.",
+    "timestamp": "2026-03-09T19:51:10.439Z"
+  },
+  {
+    "id": "bce6aaf9-09c9-482d-8325-dfa0a04daa1d",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T19:51:24.282Z"
+  },
+  {
+    "id": "925d230d-087f-43f7-82b2-0fb3cac604d3",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "SUCCESS",
+    "message": "Sucesso. 197 docs com 59483 linhas.",
+    "timestamp": "2026-03-09T19:51:52.806Z"
+  },
+  {
+    "id": "f7b5007e-a329-4a93-9b33-6990eed4d080",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T20:26:37.523Z"
+  },
+  {
+    "id": "856c0f17-0bd7-4526-aaa8-cdfeae944aa8",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "SUCCESS",
+    "message": "Sucesso. 197 docs com 59483 linhas.",
+    "timestamp": "2026-03-09T20:27:08.832Z"
+  },
+  {
+    "id": "ce21a68c-cea0-449e-8601-f1bd29117308",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T20:38:00.831Z"
+  },
+  {
+    "id": "09971d25-b1ab-4fec-9837-c31074659bca",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "SUCCESS",
+    "message": "Sucesso. 197 docs com 59483 linhas.",
+    "timestamp": "2026-03-09T20:38:31.838Z"
+  },
+  {
+    "id": "015f3b38-1e46-40d3-8411-377ec7546e48",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T20:38:41.980Z"
+  },
+  {
+    "id": "aea3e70c-384a-40d6-9901-3c6a4abed717",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "SUCCESS",
+    "message": "Sucesso. 197 docs com 59483 linhas.",
+    "timestamp": "2026-03-09T20:39:11.719Z"
+  },
+  {
+    "id": "20013fc9-ecd8-4886-baca-ba0e85818454",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "RUNNING",
+    "message": "Iniciando exportação manual...",
+    "timestamp": "2026-03-09T20:43:05.402Z"
+  },
+  {
+    "id": "0eac3552-821c-48f0-a6c6-c1aa9998db2c",
+    "scheduleId": "6d6a7617-270d-4665-b628-fdfc37ccef0a",
+    "scheduleName": "PPU",
+    "status": "SUCCESS",
+    "message": "Sucesso. 197 docs com 59483 linhas.",
+    "timestamp": "2026-03-09T20:43:36.137Z"
+  }
+]

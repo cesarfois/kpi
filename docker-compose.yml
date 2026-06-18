@@ -1,0 +1,13 @@
+services:
+  workflow-kpi-analytics:
+    build: .
+    container_name: workflow-kpi-analytics-app
+    ports:
+      - "3011:3001"
+    volumes:
+      - ./exports:/app/exports
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DEV=true
+    restart: unless-stopped

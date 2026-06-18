@@ -1,0 +1,734 @@
+[
+  {
+    "docId": 923607,
+    "instances": [
+      {
+        "Links": [
+          {
+            "rel": "self",
+            "href": "/DocuWare/Platform/Workflow/Workflows/29d24922-2e7d-4b9a-aa64-823273e966b2/Instances/c1189620-8dca-533f-add1-49677d6b95d4/History",
+            "type": null
+          }
+        ],
+        "HistorySteps": [
+          {
+            "Info": {
+              "Item": {
+                "$type": "StartHistoryStep, DocuWare.Platform.Contracts",
+                "DocumentUserVersion": "1.0"
+              }
+            },
+            "StepNumber": 1,
+            "StepDate": "/Date(1770020667150)/",
+            "ActivityName": "Start",
+            "ActivityType": "Start",
+            "StepType": "StartHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "AssignDataHistoryStep, DocuWare.Platform.Contracts",
+                "Fields": [
+                  {
+                    "Value": {
+                      "Item": "/Date(1770033600000)/",
+                      "ItemElementName": "Date"
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "DATA_DE_INICIO_DE_PROCESSO",
+                    "Type": "Date"
+                  }
+                ],
+                "FileCabinetFields": []
+              }
+            },
+            "StepNumber": 2,
+            "StepDate": "/Date(1770020667150)/",
+            "ActivityName": "Atribuir dados_0",
+            "ActivityType": "Data assignment",
+            "StepType": "AssignDataHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "AssignToHistoryStep, DocuWare.Platform.Contracts",
+                "AssignedUsers": [
+                  "simao.afonso@rcsangola.com",
+                  "priscila.caluyombo@rcsangola.com",
+                  "flavio.baptista@rcsangola.com",
+                  "loide.gada@rcsangola.com",
+                  "weza.inacio@rcsangola.com",
+                  "delfina.paulo@rcsangola.com"
+                ]
+              }
+            },
+            "StepNumber": 3,
+            "StepDate": "/Date(1770020667150)/",
+            "ActivityName": "Operador HD",
+            "ActivityType": "User assignment",
+            "StepType": "AssignToHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "DecisionHistoryStep, DocuWare.Platform.Contracts",
+                "UserName": "flavio.baptista@rcsangola.com, delfina.paulo@rcsangola.com, priscila.caluyombo@rcsangola.com, loide.gada@rcsangola.com, weza.inacio@rcsangola.com, simao.afonso@rcsangola.com",
+                "DecisionDate": "/Date(-62135596800000)/"
+              }
+            },
+            "StepNumber": 4,
+            "StepDate": "/Date(1770020667150)/",
+            "ActivityName": "Actualizar GLPI",
+            "ActivityType": "General Task",
+            "StepType": "TaskInProgressHistoryStep"
+          }
+        ],
+        "Id": "c1189620-8dca-533f-add1-49677d6b95d4",
+        "WorkflowId": "29d24922-2e7d-4b9a-aa64-823273e966b2",
+        "Name": "WFP.500.03 - MCO - HD PAY TPA Resolvido",
+        "Version": 11,
+        "WorkflowRequest": false,
+        "StartedAt": "/Date(1770020667170)/",
+        "DocId": 923607
+      },
+      {
+        "Links": [
+          {
+            "rel": "self",
+            "href": "/DocuWare/Platform/Workflow/Workflows/74979f18-230a-47a7-91d4-b6e68b84f907/Instances/0089f7e7-8438-541b-9971-6b3b232dada1/History",
+            "type": null
+          }
+        ],
+        "HistorySteps": [
+          {
+            "Info": {
+              "Item": {
+                "$type": "StartHistoryStep, DocuWare.Platform.Contracts",
+                "DocumentUserVersion": "1.0"
+              }
+            },
+            "StepNumber": 1,
+            "StepDate": "/Date(1769968165480)/",
+            "ActivityName": "Start",
+            "ActivityType": "Start",
+            "StepType": "StartHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "AssignToHistoryStep, DocuWare.Platform.Contracts",
+                "AssignedUsers": [
+                  "edson.mandela@rcsangola.com",
+                  "manuel.songue@rcsangola.com",
+                  "adilson.sungo@rcsangola.com"
+                ]
+              }
+            },
+            "StepNumber": 2,
+            "StepDate": "/Date(1769968165480)/",
+            "ActivityName": "Call Center",
+            "ActivityType": "User assignment",
+            "StepType": "AssignToHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "DecisionHistoryStep, DocuWare.Platform.Contracts",
+                "InputFields": [],
+                "Assignments": [
+                  {
+                    "Value": {
+                      "Item": "Ficha de Intervenção",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "TIPO_DE_DOCUMENTO",
+                    "Type": "Text"
+                  }
+                ],
+                "FileCabinetAssignments": [],
+                "DocumentUserVersion": "1.0",
+                "UserName": "adilson.sungo@rcsangola.com",
+                "DecisionName": "Ficha de Intervenção",
+                "DecisionDate": "/Date(1770020376840)/",
+                "Color": "Black"
+              }
+            },
+            "StepNumber": 3,
+            "StepDate": "/Date(1769968165480)/",
+            "ActivityName": "Indexação/Classificação",
+            "ActivityType": "General Task",
+            "StepType": "DecisionHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "ConditionHistoryStep, DocuWare.Platform.Contracts",
+                "OutputName": "Senão",
+                "Taken": false
+              }
+            },
+            "StepNumber": 4,
+            "StepDate": "/Date(1770020380743)/",
+            "ActivityName": "Condição ",
+            "ActivityType": "Condition",
+            "StepType": "ConditionHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "DecisionHistoryStep, DocuWare.Platform.Contracts",
+                "InputFields": [
+                  {
+                    "Value": {
+                      "Item": "Ficha de Intervenção",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Tipo de Documento",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANCO MILLENIUM ATLANTICO,S.A (B.M.A)",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Nome Fiscal",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANCO MILLENIUM ATLANTICO SEDE",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Nome Comercial",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANCO MILLENIUM ATLANTICO SEDE",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Nome GLPI",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "857457-1145673",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Nº Documento",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "/Date(1769774400000)/",
+                      "ItemElementName": "Date"
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Data",
+                    "Type": "Date"
+                  },
+                  {
+                    "Value": {
+                      "Item": "Não",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Nova Intervenção",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "PAYMENT",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Entidade GLPI",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANKING",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Unidade de Negocio",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "4A016702",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Nº Serie",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "MBABMA-0824-001",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Projecto",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "fernando.manuel@rcsangola.com",
+                      "ItemElementName": "String"
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Técnico",
+                    "Type": "User"
+                  },
+                  {
+                    "Value": {
+                      "Item": "Luanda",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Agencia RCS",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "TPA",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Area Banking",
+                    "Type": "Text"
+                  }
+                ],
+                "Assignments": [
+                  {
+                    "Value": {
+                      "Item": "/Date(1769774400000)/",
+                      "ItemElementName": "Date"
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "DATA",
+                    "Type": "Date"
+                  },
+                  {
+                    "Value": {
+                      "Item": "Ficha de Intervenção",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "TIPO_DE_DOCUMENTO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "Validado Call Center",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "ESTATUTO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "857457-1145673",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "N__DE_DOCUMENTO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "Não",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "PEDIDO_DE_NOVA_INTERVEN__O_",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "PAYMENT",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "ENTIDADE_GLPI",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANKING",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "UNIDADE_DE_NEG_CIO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "Luanda",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 15
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "AGENCIA_RCS",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "fernando.manuel@rcsangola.com",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 90
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "TECNICO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANCO MILLENIUM ATLANTICO,S.A (B.M.A)",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "CODIGO_DE_EMPRESA",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "TPA",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "DEPARTAMENTO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANCO MILLENIUM ATLANTICO SEDE",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "NOME_GLPI",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "4A016702",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "REFERENCIA",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "4A016702",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "REFERENCIA1",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "BANCO MILLENIUM ATLANTICO SEDE",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "NOME_COMERCIAL",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "MBABMA-0824-001",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 50
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "PROJECTO",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "4A016702",
+                      "ItemElementName": "String"
+                    },
+                    "Options": {
+                      "Item": {
+                        "$type": "TextHistoryFieldOptions, DocuWare.Platform.Contracts",
+                        "Length": 255
+                      }
+                    },
+                    "AssignmentType": "IndexField",
+                    "Label": "NO_SERIE",
+                    "Type": "Text"
+                  },
+                  {
+                    "Value": {
+                      "Item": "fernando.manuel@rcsangola.com",
+                      "ItemElementName": "String"
+                    },
+                    "AssignmentType": "GlobalVariable",
+                    "Label": "Tecnico ",
+                    "Type": "User"
+                  }
+                ],
+                "FileCabinetAssignments": [],
+                "DocumentUserVersion": "1.0",
+                "UserName": "adilson.sungo@rcsangola.com",
+                "DecisionName": "Aprovado",
+                "DecisionDate": "/Date(1770020665350)/",
+                "Color": "Green"
+              }
+            },
+            "StepNumber": 5,
+            "StepDate": "/Date(1770020380743)/",
+            "ActivityName": "Triagem Ficha de Intervenção",
+            "ActivityType": "General Task",
+            "StepType": "DecisionHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "EmailHistoryStep, DocuWare.Platform.Contracts",
+                "Recipients": [
+                  "fernando.manuel@rcsangola.com<fernando.manuel@rcsangola.com>"
+                ],
+                "Cc": [],
+                "Subject": "A sua Ficha de Intervenção Nº 857457-1145673 foi encaminhada para o Call Center."
+              }
+            },
+            "StepNumber": 6,
+            "StepDate": "/Date(1770020670127)/",
+            "ActivityName": "Submetido Call center",
+            "ActivityType": "Email",
+            "StepType": "EmailHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "ConditionHistoryStep, DocuWare.Platform.Contracts",
+                "OutputName": "Aprovado",
+                "Taken": true
+              }
+            },
+            "StepNumber": 7,
+            "StepDate": "/Date(1770020670127)/",
+            "ActivityName": "Condição",
+            "ActivityType": "Condition",
+            "StepType": "ConditionHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "EmailHistoryStep, DocuWare.Platform.Contracts",
+                "Recipients": [
+                  "fernando.manuel@rcsangola.com<fernando.manuel@rcsangola.com>"
+                ],
+                "Cc": [],
+                "Subject": "Ficha de intervenção Nº 857457-1145673 encaminhada para o tratamento do HD"
+              }
+            },
+            "StepNumber": 8,
+            "StepDate": "/Date(1770020670127)/",
+            "ActivityName": "Ficha Submetida HD",
+            "ActivityType": "Email",
+            "StepType": "EmailHistoryStep"
+          },
+          {
+            "Info": {
+              "Item": {
+                "$type": "EndHistoryStep, DocuWare.Platform.Contracts",
+                "EndState": "Normal",
+                "DocumentDeleted": false
+              }
+            },
+            "StepNumber": 9,
+            "StepDate": "/Date(1770020670127)/",
+            "ActivityName": "End",
+            "ActivityType": "End",
+            "StepType": "EndHistoryStep"
+          }
+        ],
+        "Id": "0089f7e7-8438-541b-9971-6b3b232dada1",
+        "WorkflowId": "74979f18-230a-47a7-91d4-b6e68b84f907",
+        "Name": "WFP.500.00 - MCO - Triagem Call Center Comercial",
+        "Version": 71,
+        "WorkflowRequest": false,
+        "StartedAt": "/Date(1769968165510)/",
+        "DocId": 923607
+      }
+    ]
+  }
+]
