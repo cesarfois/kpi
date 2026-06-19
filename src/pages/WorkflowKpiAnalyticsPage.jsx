@@ -1241,7 +1241,7 @@ export default function WorkflowKpiAnalyticsPage() {
             {/* Análise de Responsabilidade Operacional */}
             <div className="card bg-base-100 border border-base-200 shadow-lg p-6 flex flex-col justify-between">
               <div>
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b border-base-200 pb-3">
+                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-3 mb-4 border-b border-base-200 pb-3">
                   <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold flex items-center gap-2">
                       <span className="w-3 h-3 rounded-full bg-indigo-600"></span> Análise de Responsabilidade Operacional
@@ -1255,22 +1255,22 @@ export default function WorkflowKpiAnalyticsPage() {
                     </button>
                   </div>
                   {/* Tab Selector */}
-                  <div className="tabs tabs-boxed bg-base-200/60 p-1 rounded-lg">
+                  <div className="tabs tabs-boxed flex-nowrap bg-base-200/60 p-1 rounded-lg">
                     <button 
                       onClick={() => setRespTab('pendencias')} 
-                      className={`tab tab-sm font-semibold transition-all ${respTab === 'pendencias' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
+                      className={`tab tab-sm font-semibold transition-all px-3 whitespace-nowrap ${respTab === 'pendencias' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
                     >
-                      Pendências Atuais
+                      Pendências
                     </button>
                     <button 
                       onClick={() => setRespTab('historico')} 
-                      className={`tab tab-sm font-semibold transition-all ${respTab === 'historico' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
+                      className={`tab tab-sm font-semibold transition-all px-3 whitespace-nowrap ${respTab === 'historico' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
                     >
                       Histórico
                     </button>
                     <button 
                       onClick={() => setRespTab('gargalos')} 
-                      className={`tab tab-sm font-semibold transition-all ${respTab === 'gargalos' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
+                      className={`tab tab-sm font-semibold transition-all px-3 whitespace-nowrap ${respTab === 'gargalos' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
                     >
                       Gargalos
                     </button>
