@@ -251,6 +251,7 @@ export default function WorkflowKpiAnalyticsPage() {
               });
             } else {
               steps.forEach(step => {
+                if (step.ActivityType !== 'GeneralTask') return;
                 const infoItem = step.Info?.Item || {};
                 let validUser = infoItem.UserName || step.User || step.UserName || '';
                 if (!validUser && infoItem.AssignedUsers && Array.isArray(infoItem.AssignedUsers)) {
