@@ -1029,17 +1029,56 @@ export default function WorkflowKpiAnalyticsPage() {
             </div>
 
             {showCriticalHelp && (
-              <div className="mx-6 mt-4 bg-error/5 p-3 rounded-lg border border-error/20 text-xs space-y-1 text-error-content animate-fade-in">
-                <div className="flex justify-between items-center border-b border-error/20 pb-1 mb-1">
-                  <span className="font-bold text-error flex items-center gap-1">
-                    <FaExclamationTriangle /> Sobre as Tarefas Críticas
+              <div className="mx-6 mt-4 bg-error/5 p-4 rounded-lg border border-error/20 text-xs space-y-3 animate-fade-in text-error-content">
+                <div className="flex justify-between items-center border-b border-error/20 pb-2">
+                  <span className="font-bold text-error flex items-center gap-1.5">
+                    <FaExclamationTriangle className="w-4 h-4" /> Detalhes dos Campos e Fórmulas - Lista Crítica
                   </span>
                   <button onClick={() => setShowCriticalHelp(false)} className="btn btn-xs btn-circle btn-ghost text-error">✕</button>
                 </div>
-                <p>Lista detalhada exibindo tarefas ativas ou concluídas em **Atraso Inaceitável** (tempo útil decorrido superior a 2x o limite do SLA estabelecido).</p>
-                <p>As tarefas são listadas em ordem de criticidade (maior tempo de estouro útil no topo).</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-2.5 bg-base-100 rounded border border-error/15 shadow-sm">
+                    <div className="font-bold text-error">DocID</div>
+                    <div className="mt-0.5 text-base-content/80"><strong>Origem:</strong> `DOCID` / `DWDOCID`</div>
+                    <div className="text-gray-500 font-mono text-[10px] mt-1">Fórmula: Identificador único do documento no DocuWare.</div>
+                  </div>
+
+                  <div className="p-2.5 bg-base-100 rounded border border-error/15 shadow-sm">
+                    <div className="font-bold text-error">Workflow</div>
+                    <div className="mt-0.5 text-base-content/80"><strong>Origem:</strong> `Instância`</div>
+                    <div className="text-gray-500 font-mono text-[10px] mt-1">Fórmula: Nome/Identificador da instância do fluxo.</div>
+                  </div>
+
+                  <div className="p-2.5 bg-base-100 rounded border border-error/15 shadow-sm">
+                    <div className="font-bold text-error">Atividade</div>
+                    <div className="mt-0.5 text-base-content/80"><strong>Origem:</strong> `Atividade`</div>
+                    <div className="text-gray-500 font-mono text-[10px] mt-1">Fórmula: Nome do passo operacional do tipo GeneralTask.</div>
+                  </div>
+
+                  <div className="p-2.5 bg-base-100 rounded border border-error/15 shadow-sm">
+                    <div className="font-bold text-error">Responsável / Equipe</div>
+                    <div className="mt-0.5 text-base-content/80"><strong>Origem:</strong> `Calc_ResponsavelSLA`</div>
+                    <div className="text-gray-500 font-mono text-[10px] mt-1">Fórmula: Usuário executor ou Grupo/Fila responsável pela tarefa.</div>
+                  </div>
+
+                  <div className="p-2.5 bg-base-100 rounded border border-error/15 shadow-sm">
+                    <div className="font-bold text-error">Tempo Decorrido</div>
+                    <div className="mt-0.5 text-base-content/80"><strong>Origem:</strong> `Calc_TempoFormatado`</div>
+                    <div className="text-gray-500 font-mono text-[10px] mt-1">Fórmula: formata(TempoExecucaoHoras) em [d] [h] [m].</div>
+                  </div>
+
+                  <div className="p-2.5 bg-base-100 rounded border border-error/15 shadow-sm">
+                    <div className="font-bold text-error">Critério de Alerta</div>
+                    <div className="mt-0.5 text-base-content/80"><strong>Origem:</strong> `Calc_StatusSLA`</div>
+                    <div className="text-gray-500 font-mono text-[10px] mt-1">Fórmula: Horas Úteis &gt; 2 * SLA Configurado (Horas).</div>
+                  </div>
+                </div>
+                <div className="bg-error/10 p-2 rounded text-[11px] border border-error/10 text-error-content/90">
+                  <strong>Regra de Negócio:</strong> Exibe as 10 tarefas em andamento ou concluídas com maior tempo de atraso que ultrapassaram o dobro do limite de SLA determinado por etapa/atividade.
+                </div>
               </div>
-            )}
+            )
+            }
             
             {criticalTasks.length === 0 ? (
               <div className="p-12 text-center text-base-content/50 italic">
