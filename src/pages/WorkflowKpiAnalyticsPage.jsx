@@ -49,6 +49,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const [showCriticalHelp, setShowCriticalHelp] = useState(false);
   const [showProcessHelp, setShowProcessHelp] = useState(false);
   const [showRespHelp, setShowRespHelp] = useState(false);
+  const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const [respTab, setRespTab] = useState('pendencias'); // 'pendencias' | 'historico' | 'gargalos'
 
   // Fetch Cabinets on mount
@@ -611,6 +612,14 @@ export default function WorkflowKpiAnalyticsPage() {
           </label>
 
           <button 
+            onClick={() => setShowCalendarHelp(!showCalendarHelp)}
+            className="btn btn-outline btn-circle btn-sm text-info border-info/30 hover:bg-info/10 h-10 w-10 flex items-center justify-center"
+            title="Como funcionam os feriados e calendários?"
+          >
+            <FaInfoCircle className="w-4 h-4 animate-pulse" />
+          </button>
+
+          <button 
             onClick={() => setShowSlaConfig(!showSlaConfig)}
             className="btn btn-outline btn-sm h-10 gap-2 border-base-300 hover:bg-base-200"
           >
@@ -653,6 +662,82 @@ export default function WorkflowKpiAnalyticsPage() {
                     min="1"
                   />
                   <span className="absolute right-4 top-3 text-sm text-base-content/50 font-semibold">horas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Calendar Explanation Modal/Card */}
+      {showCalendarHelp && (
+        <div className="card bg-base-100 border border-base-200 shadow-xl animate-fade-in-down font-sans text-sm">
+          <div className="card-body p-6">
+            <div className="flex items-center justify-between mb-4 border-b border-base-200 pb-2">
+              <h3 className="text-lg font-bold flex items-center gap-2 text-primary">
+                <FaCalendarAlt /> Regras dos Calendários e Feriados
+              </h3>
+              <button onClick={() => setShowCalendarHelp(false)} className="btn btn-sm btn-circle btn-ghost">✕</button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Angola */}
+              <div className="p-4 bg-base-200/50 rounded-xl border border-base-300">
+                <h4 className="font-bold text-indigo-600 mb-2 flex items-center gap-1.5">
+                  🇦🇴 Angola (AO)
+                </h4>
+                <p className="text-xs text-base-content/70 mb-2">Feriados nacionais considerados:</p>
+                <ul className="list-disc pl-4 text-xs space-y-1">
+                  <li><strong>01/01</strong> - Ano Novo</li>
+                  <li><strong>04/02</strong> - Início da Luta Armada</li>
+                  <li><strong>08/03</strong> - Dia da Mulher</li>
+                  <li><strong>23/03</strong> - Dia da Libertação</li>
+                  <li><strong>04/04</strong> - Dia da Paz</li>
+                  <li><strong>01/05</strong> - Dia do Trabalho</li>
+                  <li><strong>17/09</strong> - Herói Nacional</li>
+                  <li><strong>02/11</strong> - Dia de Finados</li>
+                  <li><strong>11/11</strong> - Independência</li>
+                  <li><strong>25/12</strong> - Natal e Família</li>
+                </ul>
+              </div>
+
+              {/* Portugal */}
+              <div className="p-4 bg-base-200/50 rounded-xl border border-base-300">
+                <h4 className="font-bold text-indigo-600 mb-2 flex items-center gap-1.5">
+                  🇵🇹 Portugal (PT)
+                </h4>
+                <p className="text-xs text-base-content/70 mb-2">Feriados nacionais considerados:</p>
+                <ul className="list-disc pl-4 text-xs space-y-1">
+                  <li><strong>01/01</strong> - Ano Novo</li>
+                  <li><strong>25/04</strong> - Dia da Liberdade</li>
+                  <li><strong>01/05</strong> - Dia do Trabalhador</li>
+                  <li><strong>10/06</strong> - Dia de Portugal</li>
+                  <li><strong>15/08</strong> - Assunção de N. Sra.</li>
+                  <li><strong>05/10</strong> - Implantação da República</li>
+                  <li><strong>01/11</strong> - Todos os Santos</li>
+                  <li><strong>01/12</strong> - Restauração da Ind.</li>
+                  <li><strong>08/12</strong> - Imaculada Conceição</li>
+                  <li><strong>25/12</strong> - Natal</li>
+                </ul>
+              </div>
+
+              {/* Lógica e Ambos */}
+              <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100 flex flex-col justify-between">
+                <div>
+                  <h4 className="font-bold text-indigo-800 mb-2">
+                    Lógica de Ambos & Expediente
+                  </h4>
+                  <div className="space-y-2 text-xs text-indigo-950/80 leading-relaxed">
+                    <p>
+                      <strong>Opção Ambos (AO + PT):</strong> Considera feriado se o dia for feriado em Angola <strong>OU</strong> em Portugal (união dos dois calendários).
+                    </p>
+                    <p>
+                      <strong>Cálculo do Tempo Útil:</strong> Exclui finais de semana (Sáb/Dom) e os feriados selecionados do país (ou de ambos). Contabiliza apenas as horas ativas dentro do horário de expediente de <strong>08:00 às 18:00 (10 horas úteis por dia útil)</strong>.
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 p-2 bg-indigo-600 text-white rounded text-[11px] text-center font-semibold">
+                  Jornada Padrão de 10h Úteis/Dia
                 </div>
               </div>
             </div>
