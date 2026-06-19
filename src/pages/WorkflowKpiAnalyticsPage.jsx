@@ -153,7 +153,7 @@ export default function WorkflowKpiAnalyticsPage() {
       }
 
       console.log('Searching docs with filters:', filters);
-      const searchRes = await docuwareService.searchDocuments(selectedCabinet, filters, 1000);
+      const searchRes = await docuwareService.searchDocuments(selectedCabinet, filters, 999999);
       const docs = searchRes.items || [];
       
       if (docs.length === 0) {
