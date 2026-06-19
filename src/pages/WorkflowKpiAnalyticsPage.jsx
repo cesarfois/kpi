@@ -897,7 +897,6 @@ export default function WorkflowKpiAnalyticsPage() {
                 <p><strong>Status Geral:</strong> Avaliação (<em>Excelente</em> &gt; 80%, <em>Atenção</em> 50% - 80%, <em>Crítico</em> &lt; 50% dentro do SLA).</p>
               </div>
             )}
-            </div>
             <div className="overflow-x-auto">
               <table className="table w-full">
                 <thead>
@@ -967,7 +966,6 @@ export default function WorkflowKpiAnalyticsPage() {
                 <p>As tarefas são listadas em ordem de criticidade (maior tempo de estouro útil no topo).</p>
               </div>
             )}
-            </div>
             
             {criticalTasks.length === 0 ? (
               <div className="p-12 text-center text-base-content/50 italic">
