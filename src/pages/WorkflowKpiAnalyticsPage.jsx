@@ -8,7 +8,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell, 
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend 
 } from 'recharts';
-import { calculateRowKPIs, formatDuration } from '../utils/kpiCalculations';
+import { calculateRowKPIs, formatDuration, parseDate } from '../utils/kpiCalculations';
 import { docuwareService } from '../services/docuwareService';
 import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
 
@@ -45,9 +45,9 @@ export default function WorkflowKpiAnalyticsPage() {
   const [showSlaConfig, setShowSlaConfig] = useState(false);
   const [showCsvHelp, setShowCsvHelp] = useState(false);
   const [showSlaChartHelp, setShowSlaChartHelp] = useState(false);
-  const [showRankingHelp, setShowRankingHelp] = useState(false);
   const [showPerformanceHelp, setShowPerformanceHelp] = useState(false);
   const [showCriticalHelp, setShowCriticalHelp] = useState(false);
+  const [respTab, setRespTab] = useState('pendencias'); // 'pendencias' | 'historico' | 'gargalos'
 
   // Fetch Cabinets on mount
   useEffect(() => {
@@ -341,34 +341,81 @@ export default function WorkflowKpiAnalyticsPage() {
     ];
   }, [metrics]);
 
-  // 2. Ranking Responsáveis (SLA performance)
-  const rankingData = useMemo(() => {
+  // 2. Análise de Responsabilidade Operacional - Datasets
+  const pendenciasAtuaisData = useMemo(() => {
     if (computedData.length === 0) return [];
-    
-    const responsaveisMap = {};
+    const map = {};
     computedData.forEach(row => {
-      const resp = row['Calc_ResponsavelSLA'] || 'Não Definido';
-      const isDelayed = row['Calc_StatusSLA'] !== 'Dentro do Prazo';
-      const hours = row['Calc_TempoExecucaoHoras'] || 0;
-
-      if (!responsaveisMap[resp]) {
-        responsaveisMap[resp] = { name: resp, total: 0, atrasos: 0, totalHours: 0 };
-      }
+      if (row['Calc_ConclusaoTarefa'] !== 'Pendente') return;
+      const resp = row['Calc_ResponsavelSLA'] || 'Sem Responsável';
+      const hoursUteis = row['Calc_HorasUteis'] || 0;
+      const hoursCorrido = row['Calc_TempoExecucaoHoras'] || 0;
       
-      responsaveisMap[resp].total += 1;
-      responsaveisMap[resp].totalHours += hours;
-      if (isDelayed) {
-        responsaveisMap[resp].atrasos += 1;
+      if (!map[resp]) {
+        map[resp] = { resp, total: 0, sumUteis: 0, maxCorrido: 0 };
+      }
+      map[resp].total += 1;
+      map[resp].sumUteis += hoursUteis;
+      if (hoursCorrido > map[resp].maxCorrido) {
+        map[resp].maxCorrido = hoursCorrido;
       }
     });
+    return Object.values(map).map(item => ({
+      resp: item.resp,
+      total: item.total,
+      tempoMedio: Math.round(item.sumUteis / item.total),
+      maiorAtraso: Math.round((item.maxCorrido / 24) * 10) / 10
+    })).sort((a, b) => b.total - a.total);
+  }, [computedData]);
 
-    return Object.values(responsaveisMap)
-      .map(r => ({
-        ...r,
-        tempoMedio: Math.round((r.totalHours / r.total) * 10) / 10
-      }))
-      .sort((a, b) => b.atrasos - a.atrasos)
-      .slice(0, 8); // Top 8 bottleneck actors
+  const historicoExecucaoData = useMemo(() => {
+    if (computedData.length === 0) return [];
+    const map = {};
+    computedData.forEach(row => {
+      if (row['Calc_ConclusaoTarefa'] !== 'Concluída') return;
+      const user = row['Usuário'] || row['User'] || row['Responsável'] || row['Processor'] || row['Calc_ResponsavelSLA'] || 'Sem Nome';
+      const hoursUteis = row['Calc_HorasUteis'] || 0;
+      const withinSla = row['Calc_StatusSLA'] === 'Dentro do Prazo';
+      
+      if (!map[user]) {
+        map[user] = { user, total: 0, sumUteis: 0, withinSlaCount: 0 };
+      }
+      map[user].total += 1;
+      map[user].sumUteis += hoursUteis;
+      if (withinSla) map[user].withinSlaCount += 1;
+    });
+    return Object.values(map).map(item => ({
+      user: item.user,
+      total: item.total,
+      tempoMedio: Math.round((item.sumUteis / item.total) * 10) / 10,
+      slaPct: Math.round((item.withinSlaCount / item.total) * 100)
+    })).sort((a, b) => b.total - a.total);
+  }, [computedData]);
+
+  const gargalosEtapaData = useMemo(() => {
+    if (computedData.length === 0) return [];
+    const map = {};
+    computedData.forEach(row => {
+      const act = row['Atividade'] || 'Tarefa';
+      const hoursUteis = row['Calc_HorasUteis'] || 0;
+      const isDelayed = row['Calc_StatusSLA'] !== 'Dentro do Prazo';
+      const withinSla = row['Calc_StatusSLA'] === 'Dentro do Prazo';
+      
+      if (!map[act]) {
+        map[act] = { act, total: 0, delayed: 0, sumUteis: 0, withinSlaCount: 0 };
+      }
+      map[act].total += 1;
+      map[act].sumUteis += hoursUteis;
+      if (isDelayed) map[act].delayed += 1;
+      if (withinSla) map[act].withinSlaCount += 1;
+    });
+    return Object.values(map).map(item => ({
+      act: item.act,
+      total: item.total,
+      delayed: item.delayed,
+      tempoMedio: Math.round((item.sumUteis / item.total) * 10) / 10,
+      slaPct: Math.round((item.withinSlaCount / item.total) * 100)
+    })).sort((a, b) => b.delayed - a.delayed);
   }, [computedData]);
 
   // 3. Performance by Activity
@@ -379,14 +426,17 @@ export default function WorkflowKpiAnalyticsPage() {
     computedData.forEach(row => {
       const act = row['Atividade'] || 'Tarefa';
       const isWithinSla = row['Calc_StatusSLA'] === 'Dentro do Prazo';
-      const hours = row['Calc_TempoExecucaoHoras'] || 0;
+      const hours = row['Calc_HorasUteis'] || 0;
+      const sla = row['Calc_SLA_Horas'] || 24;
+      const desvio = row['Calc_DesvioSLAHoras'] || 0;
 
       if (!activitiesMap[act]) {
-        activitiesMap[act] = { name: act, total: 0, withinSla: 0, totalHours: 0 };
+        activitiesMap[act] = { name: act, total: 0, withinSla: 0, totalHours: 0, sla: sla, totalDesvio: 0 };
       }
 
       activitiesMap[act].total += 1;
       activitiesMap[act].totalHours += hours;
+      activitiesMap[act].totalDesvio += desvio;
       if (isWithinSla) {
         activitiesMap[act].withinSla += 1;
       }
@@ -396,6 +446,7 @@ export default function WorkflowKpiAnalyticsPage() {
       .map(a => ({
         ...a,
         tempoMedio: Math.round((a.totalHours / a.total) * 10) / 10,
+        desvioMedio: Math.round((a.totalDesvio / a.total) * 10) / 10,
         pctDentro: Math.round((a.withinSla / a.total) * 100)
       }))
       .sort((a, b) => b.total - a.total);
@@ -416,6 +467,61 @@ export default function WorkflowKpiAnalyticsPage() {
       }))
       .sort((a, b) => b.elapsedHours - a.elapsedHours)
       .slice(0, 10);
+  }, [computedData]);
+
+  // 5. Process Durations (Tempo de Processo do início ao fim por documento)
+  const processDurations = useMemo(() => {
+    if (computedData.length === 0) return null;
+    const groups = {};
+    computedData.forEach(row => {
+      const docId = row['DOCID'] || row['DWDOCID'];
+      if (!docId) return;
+      if (!groups[docId]) {
+        groups[docId] = {
+          startDates: [],
+          endDates: []
+        };
+      }
+      
+      const dataInicioStr = row['Data Início Tarefa'] || row['Data de Inicio'] || row['Data Inicio'] || row['Data de Início'] || row['Iniciado Em'] || '';
+      const dataFimStr = row['Data Decisão'] || row['Decision Date'] || row['Fim Tarefa'] || row['Data de Fim'] || '';
+      
+      const start = parseDate(dataInicioStr);
+      const end = parseDate(dataFimStr);
+      
+      if (start) groups[docId].startDates.push(start);
+      if (end) groups[docId].endDates.push(end);
+    });
+
+    const durations = []; // in hours
+    Object.keys(groups).forEach(docId => {
+      const g = groups[docId];
+      if (g.startDates.length === 0) return;
+      const earliestStart = new Date(Math.min(...g.startDates.map(d => d.getTime())));
+      
+      let latestEnd;
+      if (g.endDates.length > 0) {
+        latestEnd = new Date(Math.max(...g.endDates.map(d => d.getTime())));
+      } else {
+        latestEnd = new Date(); // If not completed, use current time
+      }
+      
+      const diffMs = latestEnd - earliestStart;
+      if (diffMs >= 0) {
+        durations.push(diffMs / (1000 * 60 * 60)); // hours
+      }
+    });
+    
+    if (durations.length === 0) return null;
+    const avg = durations.reduce((a, b) => a + b, 0) / durations.length;
+    const min = Math.min(...durations);
+    const max = Math.max(...durations);
+    
+    return {
+      avg: formatDuration(avg),
+      min: formatDuration(min),
+      max: formatDuration(max)
+    };
   }, [computedData]);
 
   // Export the full enriched CSV (Original headers + Calc_ columns)
@@ -505,7 +611,7 @@ export default function WorkflowKpiAnalyticsPage() {
             onClick={() => setShowSlaConfig(!showSlaConfig)}
             className="btn btn-outline btn-sm h-10 gap-2 border-base-300 hover:bg-base-200"
           >
-            <FaSlidersH /> SLA Parametrizado
+            <FaSlidersH /> SLA Padrão de Análise
           </button>
         </div>
       </div>
@@ -516,17 +622,17 @@ export default function WorkflowKpiAnalyticsPage() {
           <div className="card-body p-6">
             <div className="flex items-center justify-between mb-4 border-b border-base-200 pb-2">
               <h3 className="text-lg font-bold flex items-center gap-2 text-primary">
-                <FaSlidersH /> Definição de SLA Geral
+                <FaSlidersH /> SLA Padrão de Análise
               </h3>
               <button onClick={() => setShowSlaConfig(false)} className="btn btn-sm btn-circle btn-ghost">✕</button>
             </div>
             <p className="text-sm text-base-content/70 mb-4">
-              Configure o limite de SLA operacional padrão (em horas úteis) para todas as atividades. A tabela de transformações e os arquivos exportados utilizarão este valor para classificar atrasos.
+              Valor utilizado como referência padrão para classificação das atividades analisadas. Futuramente poderá ser personalizado por atividade.
             </p>
             <div className="max-w-xs">
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-bold text-gray-700">Definição de SLA (Horas)</span>
+                  <span className="label-text font-bold text-gray-700">SLA Padrão (Horas)</span>
                 </label>
                 <div className="relative">
                   <input 
@@ -740,7 +846,12 @@ export default function WorkflowKpiAnalyticsPage() {
           </div>
 
           {/* Metrics Executive Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <div className="card bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg p-4 flex flex-col justify-between border-none">
+              <span className="text-xs uppercase font-extrabold text-white/80">Cumprimento SLA</span>
+              <span className="text-3xl font-extrabold mt-2">{metrics.dentroSlaPct}%</span>
+            </div>
+
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between">
               <span className="text-xs uppercase font-bold text-base-content/50">Total Tarefas</span>
               <span className="text-3xl font-extrabold text-base-content mt-2">{metrics.total}</span>
@@ -777,6 +888,29 @@ export default function WorkflowKpiAnalyticsPage() {
               </span>
             </div>
           </div>
+
+          {/* Tempo Médio do Processo Analysis */}
+          {processDurations && (
+            <div className="card bg-base-100 border border-base-200 shadow-lg p-6 animate-fade-in">
+              <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
+                <FaClock className="text-primary" /> Tempo Médio do Processo (Início ao Fim do Documento)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100/50 flex flex-col justify-between shadow-sm">
+                  <span className="text-xs uppercase font-extrabold text-indigo-900/60">Tempo Médio Processo</span>
+                  <span className="text-2xl font-black text-indigo-600 mt-2">{processDurations.avg}</span>
+                </div>
+                <div className="p-4 bg-success/5 rounded-xl border border-success/15 flex flex-col justify-between shadow-sm">
+                  <span className="text-xs uppercase font-extrabold text-success/70">Mais Rápido</span>
+                  <span className="text-2xl font-black text-success mt-2">{processDurations.min}</span>
+                </div>
+                <div className="p-4 bg-error/5 rounded-xl border border-error/15 flex flex-col justify-between shadow-sm">
+                  <span className="text-xs uppercase font-extrabold text-error/70">Mais Demorado</span>
+                  <span className="text-2xl font-black text-error mt-2">{processDurations.max}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Graphics Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -833,44 +967,141 @@ export default function WorkflowKpiAnalyticsPage() {
               </div>
             </div>
 
-            {/* Chart 2: Ranking de Atrasos por Responsáveis */}
-            <div className="card bg-base-100 border border-base-200 shadow-lg p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <span className="w-3 h-3 rounded-full bg-primary"></span> Ranking de Responsáveis (Gargalos)
-                </h3>
-                <button 
-                  onClick={() => setShowRankingHelp(!showRankingHelp)}
-                  className="btn btn-outline btn-circle btn-xs text-info border-info/20 hover:bg-info/10"
-                  title="Legenda do Ranking"
-                >
-                  <FaInfoCircle className="w-3 h-3 animate-pulse" />
-                </button>
-              </div>
-
-              {showRankingHelp && (
-                <div className="bg-base-200/50 p-3 rounded-lg border border-base-300 text-xs mb-4 space-y-1 animate-fade-in text-base-content/80">
-                  <div className="flex justify-between items-center border-b border-base-300 pb-1 mb-1">
-                    <span className="font-bold text-primary flex items-center gap-1">
-                      <FaInfoCircle /> Sobre o Ranking de Gargalos
-                    </span>
-                    <button onClick={() => setShowRankingHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+            {/* Análise de Responsabilidade Operacional */}
+            <div className="card bg-base-100 border border-base-200 shadow-lg p-6 flex flex-col justify-between">
+              <div>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b border-base-200 pb-3">
+                  <h3 className="text-lg font-bold flex items-center gap-2">
+                    <span className="w-3 h-3 rounded-full bg-indigo-600"></span> Análise de Responsabilidade Operacional
+                  </h3>
+                  {/* Tab Selector */}
+                  <div className="tabs tabs-boxed bg-base-200/60 p-1 rounded-lg">
+                    <button 
+                      onClick={() => setRespTab('pendencias')} 
+                      className={`tab tab-sm font-semibold transition-all ${respTab === 'pendencias' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
+                    >
+                      Pendências Atuais
+                    </button>
+                    <button 
+                      onClick={() => setRespTab('historico')} 
+                      className={`tab tab-sm font-semibold transition-all ${respTab === 'historico' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
+                    >
+                      Histórico
+                    </button>
+                    <button 
+                      onClick={() => setRespTab('gargalos')} 
+                      className={`tab tab-sm font-semibold transition-all ${respTab === 'gargalos' ? 'tab-active bg-indigo-600 text-white' : 'text-base-content/70'}`}
+                    >
+                      Gargalos
+                    </button>
                   </div>
-                  <p>Lista os principais agentes (usuários ou equipes) ordenados pela contagem de tarefas ativas/concluídas com estouro de SLA (atrasos).</p>
-                  <p>Exibe a quantidade total de atrasos (em vermelho) e o tempo médio de execução correspondente em horas de calendário (em azul).</p>
                 </div>
-              )}
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={rankingData} layout="vertical">
-                    <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={120} tick={{ fontSize: 10 }} />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="atrasos" name="Tarefas Atrasadas" fill="#ef4444" radius={[0, 4, 4, 0]} />
-                    <Bar dataKey="tempoMedio" name="Tempo Médio (Horas)" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+
+                {/* Tab 1: Pendências Atuais */}
+                {respTab === 'pendencias' && (
+                  <div className="overflow-x-auto h-[260px] scrollbar-thin">
+                    <table className="table table-compact w-full text-xs">
+                      <thead>
+                        <tr className="bg-base-50">
+                          <th className="font-bold">Responsável / Equipe Atual</th>
+                          <th className="font-bold text-center">Aberto</th>
+                          <th className="font-bold text-center">Tempo Médio Parado</th>
+                          <th className="font-bold text-center">Maior Atraso</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pendenciasAtuaisData.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="text-center py-8 text-base-content/40 italic">Nenhuma pendência ativa encontrada.</td>
+                          </tr>
+                        ) : (
+                          pendenciasAtuaisData.map((row, idx) => (
+                            <tr key={idx} className="hover">
+                              <td className="font-semibold text-base-content">{row.resp}</td>
+                              <td className="text-center font-bold text-indigo-600">{row.total} {row.total === 1 ? 'tarefa' : 'tarefas'}</td>
+                              <td className="text-center font-mono text-amber-600">{row.tempoMedio}h</td>
+                              <td className="text-center font-mono text-error font-bold">{row.maiorAtraso} {row.maiorAtraso === 1 ? 'dia' : 'dias'}</td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Tab 2: Histórico de Execução */}
+                {respTab === 'historico' && (
+                  <div className="overflow-x-auto h-[260px] scrollbar-thin">
+                    <table className="table table-compact w-full text-xs">
+                      <thead>
+                        <tr className="bg-base-50">
+                          <th className="font-bold">Usuário / Responsável</th>
+                          <th className="font-bold text-center">Concluído</th>
+                          <th className="font-bold text-center">Tempo Médio</th>
+                          <th className="font-bold text-center">SLA (%)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {historicoExecucaoData.length === 0 ? (
+                          <tr>
+                            <td colSpan="4" className="text-center py-8 text-base-content/40 italic">Nenhum histórico de conclusão encontrado no período.</td>
+                          </tr>
+                        ) : (
+                          historicoExecucaoData.map((row, idx) => (
+                            <tr key={idx} className="hover">
+                              <td className="font-semibold text-base-content">{row.user}</td>
+                              <td className="text-center font-bold text-success">{row.total}</td>
+                              <td className="text-center font-mono">{row.tempoMedio}h</td>
+                              <td className="text-center">
+                                <span className={`badge font-semibold ${row.slaPct >= 80 ? 'badge-success text-white' : row.slaPct >= 50 ? 'badge-warning' : 'badge-error'}`}>
+                                  {row.slaPct}%
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {/* Tab 3: Gargalos por Etapa */}
+                {respTab === 'gargalos' && (
+                  <div className="overflow-x-auto h-[260px] scrollbar-thin">
+                    <table className="table table-compact w-full text-xs">
+                      <thead>
+                        <tr className="bg-base-50">
+                          <th className="font-bold">Atividade</th>
+                          <th className="font-bold text-center">Volume</th>
+                          <th className="font-bold text-center">Atrasadas</th>
+                          <th className="font-bold text-center">Tempo Médio</th>
+                          <th className="font-bold text-center">SLA (%)</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {gargalosEtapaData.length === 0 ? (
+                          <tr>
+                            <td colSpan="5" className="text-center py-8 text-base-content/40 italic">Nenhuma atividade processada no período.</td>
+                          </tr>
+                        ) : (
+                          gargalosEtapaData.map((row, idx) => (
+                            <tr key={idx} className="hover">
+                              <td className="font-semibold text-base-content truncate max-w-[150px]">{row.act}</td>
+                              <td className="text-center font-bold">{row.total}</td>
+                              <td className="text-center text-error font-bold">{row.delayed}</td>
+                              <td className="text-center font-mono">{row.tempoMedio}h</td>
+                              <td className="text-center">
+                                <span className={`badge font-semibold ${row.slaPct >= 80 ? 'badge-success text-white' : row.slaPct >= 50 ? 'badge-warning' : 'badge-error'}`}>
+                                  {row.slaPct}%
+                                </span>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -931,7 +1162,9 @@ export default function WorkflowKpiAnalyticsPage() {
                   <tr className="bg-base-50">
                     <th className="font-bold">Atividade</th>
                     <th className="font-bold text-center">Volume Processado</th>
+                    <th className="font-bold text-center">SLA</th>
                     <th className="font-bold text-center">Tempo Médio (Horas)</th>
+                    <th className="font-bold text-center">Desvio Médio SLA</th>
                     <th className="font-bold text-center">% Dentro do SLA</th>
                     <th className="font-bold">Status Geral</th>
                   </tr>
@@ -941,7 +1174,15 @@ export default function WorkflowKpiAnalyticsPage() {
                     <tr key={act.name} className="hover">
                       <td className="font-semibold text-base-content">{act.name}</td>
                       <td className="text-center font-mono">{act.total}</td>
+                      <td className="text-center font-mono text-base-content/70">{act.sla}h</td>
                       <td className="text-center font-mono">{act.tempoMedio}h</td>
+                      <td className="text-center">
+                        {act.desvioMedio > 0 ? (
+                          <span className="text-error font-bold font-mono">+{act.desvioMedio}h</span>
+                        ) : (
+                          <span className="text-success font-semibold text-xs bg-success/10 px-2 py-0.5 rounded">Dentro do prazo</span>
+                        )}
+                      </td>
                       <td className="text-center">
                         <div className="flex items-center justify-center gap-2">
                           <progress 
@@ -968,7 +1209,7 @@ export default function WorkflowKpiAnalyticsPage() {
           <div className="card bg-base-100 border border-base-200 shadow-lg overflow-hidden border-t-4 border-t-error">
             <div className="p-6 border-b border-base-200 flex justify-between items-center bg-error/5 bg-opacity-30">
               <h3 className="text-lg font-bold text-error flex items-center gap-2">
-                <FaExclamationTriangle /> Lista de Tarefas Críticas (Atraso Inaceitável)
+                <FaExclamationTriangle /> Plano de Ação - Tarefas Críticas
               </h3>
               <div className="flex items-center gap-3">
                 <button 

@@ -254,6 +254,8 @@ export function calculateRowKPIs(row, countryCode = 'AO', customSlas = {}) {
     responsavelSla = `Equipe - ${activityName}`;
   }
 
+  const desvioSlaHoras = Math.round((businessHours - sla) * 100) / 100;
+
   return {
     ...row, // Preserve original columns untouched
     'Calc_SLA_Horas': sla,
@@ -264,6 +266,7 @@ export function calculateRowKPIs(row, countryCode = 'AO', customSlas = {}) {
     'Calc_StatusSLA': statusSla,
     'Calc_TaskAtual': taskAtual,
     'Calc_ConclusaoTarefa': conclusao,
-    'Calc_ResponsavelSLA': responsavelSla
+    'Calc_ResponsavelSLA': responsavelSla,
+    'Calc_DesvioSLAHoras': desvioSlaHoras
   };
 }
