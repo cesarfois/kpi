@@ -185,7 +185,13 @@ export function calculateRowKPIs(row, countryCode = 'AO', customSlas = {}) {
 
   // 1. Calc_SLA_Horas
   let sla = SLA_CONFIG.Default;
-  if (customSlas && customSlas[`${workflowName}::${activityName}`]) {
+  if (typeof customSlas === 'number') {
+    sla = customSlas;
+  } else if (typeof customSlas === 'string' && !isNaN(parseFloat(customSlas))) {
+    sla = parseFloat(customSlas);
+  } else if (customSlas && typeof customSlas === 'object' && customSlas['Default'] !== undefined) {
+    sla = parseFloat(customSlas['Default']) || SLA_CONFIG.Default;
+  } else if (customSlas && typeof customSlas === 'object' && customSlas[`${workflowName}::${activityName}`]) {
     sla = parseFloat(customSlas[`${workflowName}::${activityName}`]);
   } else if (SLA_CONFIG[workflowName] && SLA_CONFIG[workflowName][activityName]) {
     sla = SLA_CONFIG[workflowName][activityName];

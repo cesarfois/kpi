@@ -40,13 +40,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const [searchProgress, setSearchProgress] = useState({ current: 0, total: 0 });
 
   // Local SLA parameterization state
-  const [customSlas, setCustomSlas] = useState({
-    'WFP.340.16 - MCO - Conhecimento GR Cliente (BFA)::Tomada de Conhecimento': '24',
-    'WFP.340.18 - MCO - GR Resolvida::Faturação': '24',
-    'WFP.340.18 - MCO - GR Resolvida::Classificação das Guias': '24',
-    'WFP.340.18 - MCO - GR Resolvida::Contabilização': '12',
-    'Default': '24'
-  });
+  const [globalSla, setGlobalSla] = useState(24);
   
   const [showSlaConfig, setShowSlaConfig] = useState(false);
   const [showCsvHelp, setShowCsvHelp] = useState(false);
@@ -130,11 +124,8 @@ export default function WorkflowKpiAnalyticsPage() {
   }, [selectedCabinet]);
 
   // Handle SLA configuration inputs
-  const handleSlaChange = (key, value) => {
-    setCustomSlas(prev => ({
-      ...prev,
-      [key]: value
-    }));
+  const handleSlaChange = (value) => {
+    setGlobalSla(value);
   };
 
   const handleSearch = async () => {
@@ -312,8 +303,8 @@ export default function WorkflowKpiAnalyticsPage() {
 
   // Run KPI Calculations over all rows using current configs
   const computedData = useMemo(() => {
-    return rawRows.map(row => calculateRowKPIs(row, calendarCountry, customSlas));
-  }, [rawRows, calendarCountry, customSlas]);
+    return rawRows.map(row => calculateRowKPIs(row, calendarCountry, globalSla));
+  }, [rawRows, calendarCountry, globalSla]);
 
   // Dashboard Metrics
   const metrics = useMemo(() => {
@@ -457,7 +448,7 @@ export default function WorkflowKpiAnalyticsPage() {
       return str;
     };
 
-    const headerRow = allHeaders.map(escapeCsv).join(';');
+    const headerRow = allHeaders.map(h => h === 'Calc_SLA_Horas' ? 'Definição de SLA' : h).map(escapeCsv).join(';');
     const dataRows = computedData.map(row => {
       return allHeaders.map(header => escapeCsv(row[header])).join(';');
     });
@@ -518,72 +509,28 @@ export default function WorkflowKpiAnalyticsPage() {
           <div className="card-body p-6">
             <div className="flex items-center justify-between mb-4 border-b border-base-200 pb-2">
               <h3 className="text-lg font-bold flex items-center gap-2 text-primary">
-                <FaSlidersH /> Configuração de SLAs por Atividade
+                <FaSlidersH /> Definição de SLA Geral
               </h3>
               <button onClick={() => setShowSlaConfig(false)} className="btn btn-sm btn-circle btn-ghost">✕</button>
             </div>
             <p className="text-sm text-base-content/70 mb-4">
-              Configure o limite de SLA operacional (em horas úteis) para cada atividade específica. A tabela de transformações irá ler estas regras dinamicamente.
+              Configure o limite de SLA operacional padrão (em horas úteis) para todas as atividades. A tabela de transformações e os arquivos exportados utilizarão este valor para classificar atrasos.
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="max-w-xs">
               <div className="form-control">
                 <label className="label">
-                  <span className="label-text font-semibold">GR Cliente: Tomada de Conhecimento (SLA Horas)</span>
+                  <span className="label-text font-bold text-gray-700">Definição de SLA (Horas)</span>
                 </label>
-                <input 
-                  type="number" 
-                  value={customSlas['WFP.340.16 - MCO - Conhecimento GR Cliente (BFA)::Tomada de Conhecimento']} 
-                  onChange={(e) => handleSlaChange('WFP.340.16 - MCO - Conhecimento GR Cliente (BFA)::Tomada de Conhecimento', e.target.value)}
-                  className="input input-bordered focus:input-primary"
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">GR Resolvida: Faturação (SLA Horas)</span>
-                </label>
-                <input 
-                  type="number" 
-                  value={customSlas['WFP.340.18 - MCO - GR Resolvida::Faturação']} 
-                  onChange={(e) => handleSlaChange('WFP.340.18 - MCO - GR Resolvida::Faturação', e.target.value)}
-                  className="input input-bordered focus:input-primary"
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">GR Resolvida: Classificação (SLA Horas)</span>
-                </label>
-                <input 
-                  type="number" 
-                  value={customSlas['WFP.340.18 - MCO - GR Resolvida::Classificação das Guias']} 
-                  onChange={(e) => handleSlaChange('WFP.340.18 - MCO - GR Resolvida::Classificação das Guias', e.target.value)}
-                  className="input input-bordered focus:input-primary"
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">GR Resolvida: Contabilização (SLA Horas)</span>
-                </label>
-                <input 
-                  type="number" 
-                  value={customSlas['WFP.340.18 - MCO - GR Resolvida::Contabilização']} 
-                  onChange={(e) => handleSlaChange('WFP.340.18 - MCO - GR Resolvida::Contabilização', e.target.value)}
-                  className="input input-bordered focus:input-primary"
-                />
-              </div>
-
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-semibold">SLA Padrão (Default)</span>
-                </label>
-                <input 
-                  type="number" 
-                  value={customSlas['Default']} 
-                  onChange={(e) => handleSlaChange('Default', e.target.value)}
-                  className="input input-bordered focus:input-primary"
-                />
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    value={globalSla} 
+                    onChange={(e) => handleSlaChange(parseFloat(e.target.value) || 0)}
+                    className="input input-bordered focus:input-primary w-full pr-12 font-bold"
+                    min="1"
+                  />
+                  <span className="absolute right-4 top-3 text-sm text-base-content/50 font-semibold">horas</span>
+                </div>
               </div>
             </div>
           </div>
@@ -719,10 +666,10 @@ export default function WorkflowKpiAnalyticsPage() {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 font-sans text-xs text-base-content/85">
                   <div className="p-3 bg-base-200 rounded-lg">
-                    <div className="font-bold text-primary text-sm">Calc_SLA_Horas</div>
-                    <div className="mt-1"><strong>Descrição:</strong> SLA operacional definido para a atividade (em horas úteis).</div>
-                    <div className="mt-1"><strong>Campos de Origem:</strong> Configurações de SLA (`customSlas` ou `SLA_CONFIG`).</div>
-                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> customSlas[Workflow::Atividade] || SLA_CONFIG[Workflow][Atividade] || 24</div>
+                    <div className="font-bold text-primary text-sm">Definição de SLA (Calc_SLA_Horas)</div>
+                    <div className="mt-1"><strong>Descrição:</strong> SLA operacional definido globalmente (em horas úteis).</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> Definição de SLA configurada na interface.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> globalSla (Default: 24h)</div>
                   </div>
 
                   <div className="p-3 bg-base-200 rounded-lg">
@@ -1074,7 +1021,7 @@ export default function WorkflowKpiAnalyticsPage() {
                   </div>
                 </div>
                 <div className="bg-error/10 p-2 rounded text-[11px] border border-error/10 text-error-content/90">
-                  <strong>Regra de Negócio:</strong> Exibe as 10 tarefas em andamento ou concluídas com maior tempo de atraso que ultrapassaram o dobro do limite de SLA determinado por etapa/atividade.
+                  <strong>Regra de Negócio:</strong> Exibe as 10 tarefas em andamento ou concluídas com maior tempo de atraso que ultrapassaram o dobro do limite de SLA geral configurado na interface.
                 </div>
               </div>
             )
