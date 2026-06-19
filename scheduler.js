@@ -6,6 +6,7 @@ import { fileURLToPath } from 'url';
 import crypto from 'crypto';
 import { tokenManager } from './tokenManager.js';
 import sql from 'mssql';
+import { calculateRowKPIs } from './src/utils/kpiCalculations.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCHEDULES_FILE = path.join(__dirname, 'schedules.json');
@@ -278,11 +279,11 @@ export const scheduler = {
                         const history = await getDocumentHistory(token, authInfo.url, cabinetId, docId);
                         const instances = processHistoryIntoInstances(history);
                         if (instances.length === 0) {
-                            return [{
+                            return [calculateRowKPIs({
                                 'Instance GUID': '', 'DOCID': docId, 'Instância': 'Sem Histórico', 'Versão': '', 'Iniciado Em': '',
                                 'Atividade': '', 'Tipo Atividade': '', 'Data Início Tarefa': '', 'Decisão': '', 'Usuário': '', 'Data Decisão': '',
                                 'Link Documento': getDocumentViewUrl(authInfo.url, authInfo.organizationId, cabinetId, docId), ...docFields
-                            }];
+                            }, 'AO')];
                         }
 
                         const docRows = [];
@@ -290,11 +291,11 @@ export const scheduler = {
                         instances.forEach(instance => {
                             const steps = instance.HistorySteps || [];
                             if (steps.length === 0) {
-                                docRows.push({
+                                docRows.push(calculateRowKPIs({
                                     'Instance GUID': instance.Id, 'DOCID': docId, 'Instância': instance.Name, 'Versão': instance.Version,
                                     'Iniciado Em': formatDate(instance.StartDate), 'Atividade': '(Sem passos)',
                                     'Link Documento': getDocumentViewUrl(authInfo.url, authInfo.organizationId, cabinetId, docId), ...docFields
-                                });
+                                }, 'AO'));
                             } else {
                                 steps.forEach(step => {
                                     const infoItem = step.Info?.Item || {};
@@ -303,20 +304,20 @@ export const scheduler = {
                                     const validDate = infoItem.DecisionDate || step.StepDate || step.TimeStamp || '';
                                     const validDecision = infoItem.DecisionName || step.DecisionLabel || '';
                                     const stepStartDate = step.StepDate || '';
-                                    docRows.push({
+                                    docRows.push(calculateRowKPIs({
                                         'Instance GUID': instance.Id, 'DOCID': docId, 'Instância': instance.Name, 'Versão': instance.Version,
                                         'Iniciado Em': formatDate(instance.StartDate), 'Atividade': step.ActivityName || step.Name,
                                         'Tipo Atividade': step.ActivityType, 'Data Início Tarefa': formatDate(stepStartDate),
                                         'Decisão': validDecision, 'Usuário': validUser, 'Data Decisão': formatDate(validDate),
                                         'Link Documento': getDocumentViewUrl(authInfo.url, authInfo.organizationId, cabinetId, docId), ...docFields
-                                    });
+                                    }, 'AO'));
                                 });
                             }
                         });
                         return docRows;
                     } catch (err) {
                         console.error(`[Scheduler] Error fetching history for ${docId}:`, err.message);
-                        return [{ 'DOCID': docId, 'Instância': 'ERRO AO BUSCAR HISTÓRICO', ...docFields }];
+                        return [calculateRowKPIs({ 'DOCID': docId, 'Instância': 'ERRO AO BUSCAR HISTÓRICO', ...docFields }, 'AO')];
                     }
                 }));
 
@@ -328,7 +329,9 @@ export const scheduler = {
         const sortedDynamic = Array.from(dynamicFields).sort();
         const fixedHeaders = [
             'Instance GUID', 'DOCID', 'Instância', 'Versão', 'Iniciado Em',
-            'Atividade', 'Tipo Atividade', 'Data Início Tarefa', 'Decisão', 'Usuário', 'Data Decisão', 'Link Documento'
+            'Atividade', 'Tipo Atividade', 'Data Início Tarefa', 'Decisão', 'Usuário', 'Data Decisão', 'Link Documento',
+            'Calc_SLA_Horas', 'Calc_TempoExecucaoHoras', 'Calc_HorasUteis', 'Calc_DiasUteis', 
+            'Calc_TempoFormatado', 'Calc_StatusSLA', 'Calc_TaskAtual', 'Calc_ConclusaoTarefa', 'Calc_ResponsavelSLA'
         ];
         const allHeaders = [...fixedHeaders, ...sortedDynamic];
 
@@ -409,22 +412,22 @@ async function executeExport(schedule, isManual = false) {
                         const history = await getDocumentHistory(token, auth.url, cabinetId, docId);
                         const instances = processHistoryIntoInstances(history);
                         if (instances.length === 0) {
-                            return [{
+                            return [calculateRowKPIs({
                                 'Instance GUID': '', 'DOCID': docId, 'Instância': 'Sem Histórico', 'Versão': '', 'Iniciado Em': '',
                                 'Atividade': '', 'Tipo Atividade': '', 'Data Início Tarefa': '', 'Decisão': '', 'Usuário': '', 'Data Decisão': '',
                                 'Link Documento': getDocumentViewUrl(auth.url, auth.organizationId, cabinetId, docId), ...docFields
-                            }];
+                            }, schedule.calendarRegion || 'AO')];
                         }
                         const docRows = [];
                         instances.sort((a, b) => (b.Version || 0) - (a.Version || 0));
                         instances.forEach(instance => {
                             const steps = instance.HistorySteps || [];
                             if (steps.length === 0) {
-                                docRows.push({
+                                docRows.push(calculateRowKPIs({
                                     'Instance GUID': instance.Id, 'DOCID': docId, 'Instância': instance.Name, 'Versão': instance.Version,
                                     'Iniciado Em': formatDate(instance.StartDate), 'Atividade': '(Sem passos)',
                                     'Link Documento': getDocumentViewUrl(auth.url, auth.organizationId, cabinetId, docId), ...docFields
-                                });
+                                }, schedule.calendarRegion || 'AO'));
                             } else {
                                 steps.forEach(step => {
                                     const infoItem = step.Info?.Item || {};
@@ -433,20 +436,20 @@ async function executeExport(schedule, isManual = false) {
                                     const validDate = infoItem.DecisionDate || step.StepDate || step.TimeStamp || '';
                                     const validDecision = infoItem.DecisionName || step.DecisionLabel || '';
                                     const stepStartDate = step.StepDate || '';
-                                    docRows.push({
+                                    docRows.push(calculateRowKPIs({
                                         'Instance GUID': instance.Id, 'DOCID': docId, 'Instância': instance.Name, 'Versão': instance.Version,
                                         'Iniciado Em': formatDate(instance.StartDate), 'Atividade': step.ActivityName || step.Name,
                                         'Tipo Atividade': step.ActivityType, 'Data Início Tarefa': formatDate(stepStartDate),
                                         'Decisão': validDecision, 'Usuário': validUser, 'Data Decisão': formatDate(validDate),
                                         'Link Documento': getDocumentViewUrl(auth.url, auth.organizationId, cabinetId, docId), ...docFields
-                                    });
+                                    }, schedule.calendarRegion || 'AO'));
                                 });
                             }
                         });
                         return docRows;
                     } catch (err) {
                         console.error(`[Scheduler] Error fetching history for ${docId}:`, err.message);
-                        return [{ 'DOCID': docId, 'Instância': 'ERRO AO BUSCAR HISTÓRICO', ...docFields }];
+                        return [calculateRowKPIs({ 'DOCID': docId, 'Instância': 'ERRO AO BUSCAR HISTÓRICO', ...docFields }, schedule.calendarRegion || 'AO')];
                     }
                 }));
                 chunkResults.forEach(res => { if (res) allRows.push(...res); });
@@ -475,7 +478,9 @@ async function executeExport(schedule, isManual = false) {
         const sortedDynamic = Array.from(dynamicFields).sort();
         const fixedHeaders = [
             'Instance GUID', 'DOCID', 'Instância', 'Versão', 'Iniciado Em',
-            'Atividade', 'Tipo Atividade', 'Data Início Tarefa', 'Decisão', 'Usuário', 'Data Decisão', 'Link Documento'
+            'Atividade', 'Tipo Atividade', 'Data Início Tarefa', 'Decisão', 'Usuário', 'Data Decisão', 'Link Documento',
+            'Calc_SLA_Horas', 'Calc_TempoExecucaoHoras', 'Calc_HorasUteis', 'Calc_DiasUteis', 
+            'Calc_TempoFormatado', 'Calc_StatusSLA', 'Calc_TaskAtual', 'Calc_ConclusaoTarefa', 'Calc_ResponsavelSLA'
         ];
         const allHeaders = [...fixedHeaders, ...sortedDynamic];
 
