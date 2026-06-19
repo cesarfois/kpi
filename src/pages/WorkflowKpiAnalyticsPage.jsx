@@ -665,49 +665,35 @@ export default function WorkflowKpiAnalyticsPage() {
 
   return (
     <div className="p-6 max-w-[95%] mx-auto space-y-8 animate-fade-in">
-      {/* Header Panel */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-base-100 p-6 rounded-2xl border border-base-200 shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="p-4 bg-primary/10 text-primary rounded-2xl">
-            <FaHistory className="w-8 h-8" />
-          </div>
-          <div>
-            <h1 className="text-3xl font-extrabold text-base-content tracking-tight">Workflow KPI Analytics</h1>
-            <p className="text-base-content/60 mt-1 text-sm">
-              Análise operacional inteligente, indicadores de SLA e exportação enriquecida para workflows DocuWare.
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="input input-bordered flex items-center gap-2 select-sm h-10">
-            <FaCalendarAlt className="text-base-content/40" />
-            <select 
-              value={calendarCountry} 
-              onChange={(e) => setCalendarCountry(e.target.value)}
-              className="bg-transparent border-none focus:outline-none text-sm font-semibold cursor-pointer text-gray-700 bg-white"
-            >
-              <option value="AO">Calendário Angola (AO)</option>
-              <option value="PT">Calendário Portugal (PT)</option>
-              <option value="BOTH">Ambos os Calendários (AO + PT)</option>
-            </select>
-          </label>
-
-          <button 
-            onClick={() => setShowCalendarHelp(!showCalendarHelp)}
-            className="btn btn-outline btn-circle btn-sm text-info border-info/30 hover:bg-info/10 h-10 w-10 flex items-center justify-center"
-            title="Como funcionam os feriados e calendários?"
+      {/* Controls Row */}
+      <div className="flex flex-wrap justify-end items-center gap-3">
+        <label className="input input-bordered flex items-center gap-2 select-sm h-10 bg-white">
+          <FaCalendarAlt className="text-base-content/40" />
+          <select 
+            value={calendarCountry} 
+            onChange={(e) => setCalendarCountry(e.target.value)}
+            className="bg-transparent border-none focus:outline-none text-sm font-semibold cursor-pointer text-gray-700 bg-white"
           >
-            <FaInfoCircle className="w-4 h-4 animate-pulse" />
-          </button>
+            <option value="AO">Calendário Angola (AO)</option>
+            <option value="PT">Calendário Portugal (PT)</option>
+            <option value="BOTH">Ambos os Calendários (AO + PT)</option>
+          </select>
+        </label>
 
-          <button 
-            onClick={() => setShowSlaConfig(!showSlaConfig)}
-            className="btn btn-outline btn-sm h-10 gap-2 border-base-300 hover:bg-base-200"
-          >
-            <FaSlidersH /> SLA Padrão de Análise
-          </button>
-        </div>
+        <button 
+          onClick={() => setShowCalendarHelp(!showCalendarHelp)}
+          className="btn btn-outline btn-circle btn-sm text-info border-info/30 hover:bg-info/10 h-10 w-10 flex items-center justify-center bg-white"
+          title="Como funcionam os feriados e calendários?"
+        >
+          <FaInfoCircle className="w-4 h-4 animate-pulse" />
+        </button>
+
+        <button 
+          onClick={() => setShowSlaConfig(!showSlaConfig)}
+          className="btn btn-outline btn-sm h-10 gap-2 border-base-300 hover:bg-base-200 bg-white"
+        >
+          <FaSlidersH /> SLA Padrão de Análise
+        </button>
       </div>
 
       {/* SLA Configuration Modal/Card */}
