@@ -49,6 +49,11 @@ export default function WorkflowKpiAnalyticsPage() {
   });
   
   const [showSlaConfig, setShowSlaConfig] = useState(false);
+  const [showCsvHelp, setShowCsvHelp] = useState(false);
+  const [showSlaChartHelp, setShowSlaChartHelp] = useState(false);
+  const [showRankingHelp, setShowRankingHelp] = useState(false);
+  const [showPerformanceHelp, setShowPerformanceHelp] = useState(false);
+  const [showCriticalHelp, setShowCriticalHelp] = useState(false);
 
   // Fetch Cabinets on mount
   useEffect(() => {
@@ -681,17 +686,50 @@ export default function WorkflowKpiAnalyticsPage() {
       {!loading && computedData.length > 0 && metrics && (
         <div className="space-y-8 animate-fade-in-up">
           {/* Action Row */}
-          <div className="flex justify-between items-center bg-base-100 p-4 rounded-xl border border-base-200 shadow-md">
-            <div className="flex items-center gap-2 text-sm text-base-content/70">
-              <FaInfoCircle className="text-info" />
-              <span>Dados normalizados com sucesso. Pronto para exportação executiva.</span>
+          <div className="flex flex-col bg-base-100 p-4 rounded-xl border border-base-200 shadow-md space-y-4">
+            <div className="flex justify-between items-center w-full">
+              <div className="flex items-center gap-2 text-sm text-base-content/70">
+                <FaInfoCircle className="text-info" />
+                <span>Dados normalizados com sucesso. Pronto para exportação executiva.</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowCsvHelp(!showCsvHelp)}
+                  className="btn btn-outline btn-circle btn-sm text-info border-info/30 hover:bg-info/10"
+                  title="Ajuda sobre as colunas do CSV"
+                >
+                  <FaInfoCircle className="w-4 h-4 animate-pulse" />
+                </button>
+                <button 
+                  onClick={handleExportEnrichedCSV}
+                  className="btn btn-success text-white gap-2 font-bold shadow-md shadow-success/20 hover:scale-[1.02] transition-transform"
+                >
+                  <FaFileCsv className="text-lg" /> Exportar Workflow Analytics CSV
+                </button>
+              </div>
             </div>
-            <button 
-              onClick={handleExportEnrichedCSV}
-              className="btn btn-success text-white gap-2 font-bold shadow-md shadow-success/20 hover:scale-[1.02] transition-transform"
-            >
-              <FaFileCsv className="text-lg" /> Exportar Workflow Analytics CSV
-            </button>
+
+            {showCsvHelp && (
+              <div className="bg-base-200/50 p-4 rounded-lg border border-base-300 text-sm space-y-2 animate-fade-in">
+                <div className="flex justify-between items-center border-b border-base-300 pb-2 mb-2">
+                  <h4 className="font-bold text-primary flex items-center gap-2">
+                    <FaInfoCircle /> Legenda das Colunas do CSV Enriquecido
+                  </h4>
+                  <button onClick={() => setShowCsvHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 font-sans text-xs text-base-content/80">
+                  <div><strong>Calc_SLA_Horas:</strong> SLA configurado para a atividade (em horas úteis).</div>
+                  <div><strong>Calc_TempoExecucaoHoras:</strong> Tempo de calendário total corrido desde o início até a conclusão ou momento atual.</div>
+                  <div><strong>Calc_HorasUteis:</strong> Horas decorridas ativas dentro do horário de trabalho (08:00 - 18:00), descontando fins de semana e feriados.</div>
+                  <div><strong>Calc_DiasUteis:</strong> `Calc_HorasUteis` convertidas em dias úteis inteiros (divido por 8).</div>
+                  <div><strong>Calc_TempoFormatado:</strong> Tempo corrido formatado em dias, horas e minutos (ex: Xd Yh Zm).</div>
+                  <div><strong>Calc_StatusSLA:</strong> Classificação final baseada no SLA útil (Dentro do Prazo, Atraso Moderado ou Atraso Inaceitável).</div>
+                  <div><strong>Calc_TaskAtual:</strong> Atividade que está pendente no momento (vazio se concluído).</div>
+                  <div><strong>Calc_ConclusaoTarefa:</strong> Indica se a atividade está Concluída ou Pendente.</div>
+                  <div><strong>Calc_ResponsavelSLA:</strong> Ator responsável individual ou Equipe atribuída à atividade de grupo.</div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Metrics Executive Cards */}
@@ -737,9 +775,32 @@ export default function WorkflowKpiAnalyticsPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Chart 1: SLA por Status */}
             <div className="card bg-base-100 border border-base-200 shadow-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-primary"></span> Distribuição de SLA por Status
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-primary"></span> Distribuição de SLA por Status
+                </h3>
+                <button 
+                  onClick={() => setShowSlaChartHelp(!showSlaChartHelp)}
+                  className="btn btn-outline btn-circle btn-xs text-info border-info/20 hover:bg-info/10"
+                  title="Legenda da Distribuição do SLA"
+                >
+                  <FaInfoCircle className="w-3 h-3 animate-pulse" />
+                </button>
+              </div>
+
+              {showSlaChartHelp && (
+                <div className="bg-base-200/50 p-3 rounded-lg border border-base-300 text-xs mb-4 space-y-1 animate-fade-in text-base-content/80">
+                  <div className="flex justify-between items-center border-b border-base-300 pb-1 mb-1">
+                    <span className="font-bold text-primary flex items-center gap-1">
+                      <FaInfoCircle /> Regras do SLA por Status
+                    </span>
+                    <button onClick={() => setShowSlaChartHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+                  </div>
+                  <p><strong>Dentro do Prazo:</strong> Horas úteis trabalhadas estão dentro do limite do SLA.</p>
+                  <p><strong>Atraso Moderado:</strong> Horas úteis excedem o SLA, mas são menores ou iguais a 2x o SLA.</p>
+                  <p><strong>Atraso Inaceitável:</strong> Horas úteis trabalhadas são superiores a 2x o SLA configurado.</p>
+                </div>
+              )}
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -767,9 +828,31 @@ export default function WorkflowKpiAnalyticsPage() {
 
             {/* Chart 2: Ranking de Atrasos por Responsáveis */}
             <div className="card bg-base-100 border border-base-200 shadow-lg p-6">
-              <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-primary"></span> Ranking de Responsáveis (Gargalos)
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <span className="w-3 h-3 rounded-full bg-primary"></span> Ranking de Responsáveis (Gargalos)
+                </h3>
+                <button 
+                  onClick={() => setShowRankingHelp(!showRankingHelp)}
+                  className="btn btn-outline btn-circle btn-xs text-info border-info/20 hover:bg-info/10"
+                  title="Legenda do Ranking"
+                >
+                  <FaInfoCircle className="w-3 h-3 animate-pulse" />
+                </button>
+              </div>
+
+              {showRankingHelp && (
+                <div className="bg-base-200/50 p-3 rounded-lg border border-base-300 text-xs mb-4 space-y-1 animate-fade-in text-base-content/80">
+                  <div className="flex justify-between items-center border-b border-base-300 pb-1 mb-1">
+                    <span className="font-bold text-primary flex items-center gap-1">
+                      <FaInfoCircle /> Sobre o Ranking de Gargalos
+                    </span>
+                    <button onClick={() => setShowRankingHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+                  </div>
+                  <p>Lista os principais agentes (usuários ou equipes) ordenados pela contagem de tarefas ativas/concluídas com estouro de SLA (atrasos).</p>
+                  <p>Exibe a quantidade total de atrasos (em vermelho) e o tempo médio de execução correspondente em horas de calendário (em azul).</p>
+                </div>
+              )}
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={rankingData} layout="vertical">
@@ -787,10 +870,33 @@ export default function WorkflowKpiAnalyticsPage() {
 
           {/* Activity Performance Table */}
           <div className="card bg-base-100 border border-base-200 shadow-lg overflow-hidden">
-            <div className="p-6 border-b border-base-200">
+            <div className="p-6 border-b border-base-200 flex justify-between items-center">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-primary"></span> Performance Operacional por Atividade
               </h3>
+              <button 
+                onClick={() => setShowPerformanceHelp(!showPerformanceHelp)}
+                className="btn btn-outline btn-circle btn-xs text-info border-info/20 hover:bg-info/10"
+                title="Legenda da Performance"
+              >
+                <FaInfoCircle className="w-3 h-3 animate-pulse" />
+              </button>
+            </div>
+
+            {showPerformanceHelp && (
+              <div className="mx-6 mt-4 bg-base-200/50 p-3 rounded-lg border border-base-300 text-xs space-y-1 animate-fade-in text-base-content/80">
+                <div className="flex justify-between items-center border-b border-base-300 pb-1 mb-1">
+                  <span className="font-bold text-primary flex items-center gap-1">
+                    <FaInfoCircle /> Legenda de Indicadores de Performance
+                  </span>
+                  <button onClick={() => setShowPerformanceHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+                </div>
+                <p><strong>Volume Processado:</strong> Total de instâncias processadas para cada tipo de tarefa.</p>
+                <p><strong>Tempo Médio (Horas):</strong> Média de horas gastas em tempo corrido por atividade.</p>
+                <p><strong>% Dentro do SLA:</strong> Percentual de atividades concluídas dentro do limite do SLA útil configurado.</p>
+                <p><strong>Status Geral:</strong> Avaliação (<em>Excelente</em> &gt; 80%, <em>Atenção</em> 50% - 80%, <em>Crítico</em> &lt; 50% dentro do SLA).</p>
+              </div>
+            )}
             </div>
             <div className="overflow-x-auto">
               <table className="table w-full">
@@ -833,11 +939,34 @@ export default function WorkflowKpiAnalyticsPage() {
 
           {/* Critical Task List Panel */}
           <div className="card bg-base-100 border border-base-200 shadow-lg overflow-hidden border-t-4 border-t-error">
-            <div className="p-6 border-b border-base-200 flex justify-between items-center bg-error/5">
+            <div className="p-6 border-b border-base-200 flex justify-between items-center bg-error/5 bg-opacity-30">
               <h3 className="text-lg font-bold text-error flex items-center gap-2">
                 <FaExclamationTriangle /> Lista de Tarefas Críticas (Atraso Inaceitável)
               </h3>
-              <span className="badge badge-error text-white font-bold">{criticalTasks.length} alertas</span>
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowCriticalHelp(!showCriticalHelp)}
+                  className="btn btn-outline btn-circle btn-xs text-error border-error/20 hover:bg-error/10"
+                  title="Legenda da Lista Crítica"
+                >
+                  <FaInfoCircle className="w-3 h-3 animate-pulse" />
+                </button>
+                <span className="badge badge-error text-white font-bold">{criticalTasks.length} alertas</span>
+              </div>
+            </div>
+
+            {showCriticalHelp && (
+              <div className="mx-6 mt-4 bg-error/5 p-3 rounded-lg border border-error/20 text-xs space-y-1 text-error-content animate-fade-in">
+                <div className="flex justify-between items-center border-b border-error/20 pb-1 mb-1">
+                  <span className="font-bold text-error flex items-center gap-1">
+                    <FaExclamationTriangle /> Sobre as Tarefas Críticas
+                  </span>
+                  <button onClick={() => setShowCriticalHelp(false)} className="btn btn-xs btn-circle btn-ghost text-error">✕</button>
+                </div>
+                <p>Lista detalhada exibindo tarefas ativas ou concluídas em **Atraso Inaceitável** (tempo útil decorrido superior a 2x o limite do SLA estabelecido).</p>
+                <p>As tarefas são listadas em ordem de criticidade (maior tempo de estouro útil no topo).</p>
+              </div>
+            )}
             </div>
             
             {criticalTasks.length === 0 ? (
