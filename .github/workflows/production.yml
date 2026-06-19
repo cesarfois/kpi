@@ -28,9 +28,13 @@ jobs:
             # Go to the application directory
             cd /app/workflow-kpi-analytics
             
-            # Pull the latest code
-            git pull origin master
+            # Fetch and hard reset to match origin/master (avoiding local conflicts on VPS)
+            git fetch origin master
+            git reset --hard origin/master
             
             # Rebuild and restart the containers
             docker compose down --remove-orphans
             docker compose up -d --build
+            
+            # Clean up dangling images to save VPS disk space
+            docker image prune -f
