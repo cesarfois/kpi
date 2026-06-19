@@ -140,16 +140,27 @@ export default function WorkflowKpiAnalyticsPage() {
     setGlobalSla(value);
   };
 
-  const applyQuickSearch = (cabinetName, docType, dateField, slaHours) => {
+  const applyQuickSearch = (cabinetKeyword, docType, dateField, slaHours) => {
     setError(null);
-    // 1. Find cabinet matching the name (using case-insensitive partial match)
-    const foundCabinet = cabinets.find(c => (c.Name || '').toLowerCase().includes(cabinetName.toLowerCase()));
+    const foundCabinet = cabinets.find(c => (c.Name || '').toLowerCase().includes(cabinetKeyword.toLowerCase()));
     if (foundCabinet) {
-      setSelectedCabinet(foundCabinet.Id);
-      setPendingDocType(docType);
+      const isSameCabinet = selectedCabinet === foundCabinet.Id;
+      if (isSameCabinet) {
+        const matched = docTypeOptions.find(v => String(v).trim().toLowerCase() === docType.trim().toLowerCase());
+        if (matched) {
+          setSelectedDocType(matched);
+        } else {
+          setSelectedDocType('');
+          setPendingDocType(docType);
+        }
+      } else {
+        setSelectedDocType('');
+        setSelectedCabinet(foundCabinet.Id);
+        setPendingDocType(docType);
+      }
     } else {
-      console.warn(`Cabinet not found: ${cabinetName}`);
-      setError(`Armário "${cabinetName}" não encontrado na lista de armários disponíveis.`);
+      console.warn(`Cabinet not found with keyword: ${cabinetKeyword}`);
+      setError(`Armário correspondente a "${cabinetKeyword}" não encontrado na lista de armários disponíveis.`);
       return;
     }
 
