@@ -437,7 +437,14 @@ export default function WorkflowKpiAnalyticsPage() {
       'Calc_ResponsavelSLA'
     ];
 
-    const allHeaders = [...originalHeaders, ...calculatedHeaders];
+    const linkIndex = originalHeaders.findIndex(h => h.toLowerCase() === 'link documento');
+    const allHeaders = linkIndex !== -1 
+      ? [
+          ...originalHeaders.slice(0, linkIndex + 1),
+          ...calculatedHeaders,
+          ...originalHeaders.slice(linkIndex + 1)
+        ]
+      : [...originalHeaders, ...calculatedHeaders];
 
     const escapeCsv = (val) => {
       if (val === null || val === undefined) return '';
