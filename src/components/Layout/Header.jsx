@@ -1,15 +1,15 @@
 import { FaBars, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
 import { useAuth } from '../../context/AuthContext';
 
-const Header = ({ isSidebarCollapsed, toggleSidebar }) => {
+const Header = () => {
     const { user, logout } = useAuth();
 
     return (
-        <header className={`
+        <header className="
             fixed top-0 right-0 z-20 bg-white shadow-sm border-b border-gray-100 h-16
             transition-all duration-300 ease-in-out flex items-center justify-between px-6
-            ${isSidebarCollapsed ? 'left-20' : 'left-64'}
-        `}>
+            left-0
+        ">
             {/* Left: Title/Brand Only */}
             <div className="flex items-center gap-4 pl-4">
                 {/* Brand Logo (Image) */}
