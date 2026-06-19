@@ -3,7 +3,7 @@ import axios from 'axios';
 const api = axios.create({
     // Use relative path - Vite proxy will forward /DocuWare/* to the DocuWare server
     baseURL: '/DocuWare/Platform',
-    timeout: 30000,
+    timeout: 60000,
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

@@ -11,7 +11,7 @@ import axios from 'axios';
 
 const analyticsApi = axios.create({
     baseURL: '/DocuWare/Workflow/Analytics', // Removed '/api' which is likely incorrect
-    timeout: 30000,
+    timeout: 60000,
     headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',

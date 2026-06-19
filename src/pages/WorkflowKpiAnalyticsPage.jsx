@@ -199,7 +199,7 @@ export default function WorkflowKpiAnalyticsPage() {
       };
 
       let completedCount = 0;
-      const allRowsResults = await pool(25, docs, async (doc) => {
+      const allRowsResults = await pool(10, docs, async (doc) => {
         const docId = doc.Id;
         try {
           // Extract index fields from search result document
