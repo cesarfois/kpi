@@ -717,16 +717,69 @@ export default function WorkflowKpiAnalyticsPage() {
                   </h4>
                   <button onClick={() => setShowCsvHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 font-sans text-xs text-base-content/80">
-                  <div><strong>Calc_SLA_Horas:</strong> SLA configurado para a atividade (em horas úteis).</div>
-                  <div><strong>Calc_TempoExecucaoHoras:</strong> Tempo de calendário total corrido desde o início até a conclusão ou momento atual.</div>
-                  <div><strong>Calc_HorasUteis:</strong> Horas decorridas ativas dentro do horário de trabalho (08:00 - 18:00), descontando fins de semana e feriados.</div>
-                  <div><strong>Calc_DiasUteis:</strong> `Calc_HorasUteis` convertidas em dias úteis inteiros (divido por 8).</div>
-                  <div><strong>Calc_TempoFormatado:</strong> Tempo corrido formatado em dias, horas e minutos (ex: Xd Yh Zm).</div>
-                  <div><strong>Calc_StatusSLA:</strong> Classificação final baseada no SLA útil (Dentro do Prazo, Atraso Moderado ou Atraso Inaceitável).</div>
-                  <div><strong>Calc_TaskAtual:</strong> Atividade que está pendente no momento (vazio se concluído).</div>
-                  <div><strong>Calc_ConclusaoTarefa:</strong> Indica se a atividade está Concluída ou Pendente.</div>
-                  <div><strong>Calc_ResponsavelSLA:</strong> Ator responsável individual ou Equipe atribuída à atividade de grupo.</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 font-sans text-xs text-base-content/85">
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_SLA_Horas</div>
+                    <div className="mt-1"><strong>Descrição:</strong> SLA operacional definido para a atividade (em horas úteis).</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> Configurações de SLA (`customSlas` ou `SLA_CONFIG`).</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> customSlas[Workflow::Atividade] || SLA_CONFIG[Workflow][Atividade] || 24</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_TempoExecucaoHoras</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Duração total corrida de calendário.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Data Início Tarefa`, `Data Decisão`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> (Data Decisão || Agora) - Data Início Tarefa (em Horas)</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_HorasUteis</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Tempo de processamento descontando fins de semana e feriados nacionais.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Data Início Tarefa`, `Data Decisão`, feriados do país selecionado (`calendarCountry`).</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Tempo corrido no intervalo 08:00 - 18:00 (10h úteis/dia), excluindo Finais de Semana e Feriados.</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_DiasUteis</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Horas ativas úteis convertidas para dias úteis comerciais.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Calc_HorasUteis`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Calc_HorasUteis / 8 (Jornada média diária comercial)</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_TempoFormatado</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Tempo de calendário formatado legível.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Calc_TempoExecucaoHoras`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Conversão matemática para string "Xd Yh Zm"</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_StatusSLA</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Avaliação do cumprimento de prazos.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Calc_HorasUteis`, `Calc_SLA_Horas`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Se HorasUteis &lt;= SLA -&gt; Dentro do Prazo; Se HorasUteis &lt;= 2x SLA -&gt; Atraso Moderado; Senão -&gt; Atraso Inaceitável</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_TaskAtual</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Tarefa pendente ativa no momento.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Atividade`, `Data Decisão`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Se Data Decisão está vazia -&gt; retorna Atividade; Senão -&gt; vazio</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_ConclusaoTarefa</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Situação atual da atividade.</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Data Decisão`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Se Data Decisão preenchida -&gt; "Concluída"; Senão -&gt; "Pendente"</div>
+                  </div>
+
+                  <div className="p-3 bg-base-200 rounded-lg md:col-span-2">
+                    <div className="font-bold text-primary text-sm">Calc_ResponsavelSLA</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Determinação de autoria para o cumprimento/atraso do SLA (evita culpar indivíduos por tarefas/atrasos compartilhados em fila de grupo).</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Usuário`, `Atividade`, `Calc_ConclusaoTarefa`, `Calc_StatusSLA`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Se (Pendente e Usuário vazio) ou (Atrasado e Usuário com múltiplos nomes) -&gt; "Equipe - Atividade"; Senão -&gt; retorna o próprio Usuário</div>
+                  </div>
                 </div>
               </div>
             )}
