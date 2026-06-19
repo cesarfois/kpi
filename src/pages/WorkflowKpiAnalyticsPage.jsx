@@ -937,17 +937,38 @@ export default function WorkflowKpiAnalyticsPage() {
             </div>
 
             {showPerformanceHelp && (
-              <div className="mx-6 mt-4 bg-base-200/50 p-3 rounded-lg border border-base-300 text-xs space-y-1 animate-fade-in text-base-content/80">
-                <div className="flex justify-between items-center border-b border-base-300 pb-1 mb-1">
+              <div className="mx-6 mt-4 bg-base-200/50 p-4 rounded-lg border border-base-300 text-xs space-y-3 animate-fade-in text-base-content/85">
+                <div className="flex justify-between items-center border-b border-base-300 pb-2">
                   <span className="font-bold text-primary flex items-center gap-1">
-                    <FaInfoCircle /> Legenda de Indicadores de Performance
+                    <FaInfoCircle /> Detalhes dos Indicadores de Performance Operacional
                   </span>
                   <button onClick={() => setShowPerformanceHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
                 </div>
-                <p><strong>Volume Processado:</strong> Total de instâncias processadas para cada tipo de tarefa.</p>
-                <p><strong>Tempo Médio (Horas):</strong> Média de horas gastas em tempo corrido por atividade.</p>
-                <p><strong>% Dentro do SLA:</strong> Percentual de atividades concluídas dentro do limite do SLA útil configurado.</p>
-                <p><strong>Status Geral:</strong> Avaliação (<em>Excelente</em> &gt; 80%, <em>Atenção</em> 50% - 80%, <em>Crítico</em> &lt; 50% dentro do SLA).</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="p-2 bg-base-100 rounded border border-base-300">
+                    <div className="font-bold text-primary">Volume Processado</div>
+                    <div className="mt-0.5"><strong>Campos:</strong> `Atividade`</div>
+                    <div className="text-gray-500 font-mono text-[10px]">Fórmula: total(Atividade)</div>
+                  </div>
+
+                  <div className="p-2 bg-base-100 rounded border border-base-300">
+                    <div className="font-bold text-primary">Tempo Médio (Horas)</div>
+                    <div className="mt-0.5"><strong>Campos:</strong> `Calc_TempoExecucaoHoras`</div>
+                    <div className="text-gray-500 font-mono text-[10px]">Fórmula: soma(TempoExecucao) / Volume</div>
+                  </div>
+
+                  <div className="p-2 bg-base-100 rounded border border-base-300">
+                    <div className="font-bold text-primary">% Dentro do SLA</div>
+                    <div className="mt-0.5"><strong>Campos:</strong> `Calc_StatusSLA`</div>
+                    <div className="text-gray-500 font-mono text-[10px]">Fórmula: (total(Status === "Dentro do Prazo") / Volume) * 100</div>
+                  </div>
+
+                  <div className="p-2 bg-base-100 rounded border border-base-300">
+                    <div className="font-bold text-primary">Status Geral</div>
+                    <div className="mt-0.5"><strong>Campos:</strong> `% Dentro do SLA`</div>
+                    <div className="text-gray-500 font-mono text-[10px]">Fórmula: &gt;=80% -&gt; Excelente; &gt;=50% -&gt; Atenção; &lt;50% -&gt; Crítico</div>
+                  </div>
+                </div>
               </div>
             )}
             <div className="overflow-x-auto">
