@@ -1,23 +1,43 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
-  FaHistory, FaUpload, FaFileCsv, FaCheckCircle, 
+  FaHistory, FaFileCsv, FaCheckCircle, 
   FaClock, FaExclamationTriangle, FaUsers, FaArrowRight,
-  FaCalendarAlt, FaSlidersH, FaFileAlt, FaInfoCircle
+  FaCalendarAlt, FaSlidersH, FaFileAlt, FaInfoCircle, FaSearch
 } from 'react-icons/fa';
 import { 
   ResponsiveContainer, PieChart, Pie, Cell, 
   BarChart, Bar, XAxis, YAxis, Tooltip, Legend 
 } from 'recharts';
 import { calculateRowKPIs, formatDuration } from '../utils/kpiCalculations';
+import { docuwareService } from '../services/docuwareService';
+import { workflowAnalyticsService } from '../services/workflowAnalyticsService';
 
 export default function WorkflowKpiAnalyticsPage() {
-  const [selectedCabinet, setSelectedCabinet] = useState('Armazém');
-  const [selectedDocType, setSelectedDocType] = useState('Guia de Remessa');
+  const [cabinets, setCabinets] = useState([]);
+  const [selectedCabinet, setSelectedCabinet] = useState('');
+  const [docTypeFieldName, setDocTypeFieldName] = useState('');
+  const [docTypeOptions, setDocTypeOptions] = useState([]);
+  const [selectedDocType, setSelectedDocType] = useState('');
+  const [customDateField, setCustomDateField] = useState('');
+  const [selectedDateField, setSelectedDateField] = useState('DWStoreDateTime');
+
+  const getPastDateStr = (daysAgo) => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return d.toISOString().split('T')[0];
+  };
+  const getTodayStr = () => {
+    return new Date().toISOString().split('T')[0];
+  };
+
+  const [startDate, setStartDate] = useState(getPastDateStr(30));
+  const [endDate, setEndDate] = useState(getTodayStr());
+
   const [calendarCountry, setCalendarCountry] = useState('AO'); // AO or PT
-  const [fileData, setFileData] = useState(null);
-  const [fileName, setFileName] = useState('');
+  const [rawRows, setRawRows] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searchProgress, setSearchProgress] = useState({ current: 0, total: 0 });
 
   // Local SLA parameterization state
   const [customSlas, setCustomSlas] = useState({
@@ -30,9 +50,79 @@ export default function WorkflowKpiAnalyticsPage() {
   
   const [showSlaConfig, setShowSlaConfig] = useState(false);
 
-  // Cabinets and DocTypes lists
-  const cabinets = ['Comercial', 'Financeiro', 'Frota', 'Compras', 'Armazém'];
-  const docTypes = ['Guia de Remessa', 'Pedido de Compra', 'Processo Interno'];
+  // Fetch Cabinets on mount
+  useEffect(() => {
+    const fetchCabinets = async () => {
+      try {
+        setLoading(true);
+        const data = await docuwareService.getCabinets();
+        const sortedData = data.sort((a, b) => a.Name.localeCompare(b.Name));
+        setCabinets(sortedData);
+        if (sortedData.length > 0) {
+          setSelectedCabinet(sortedData[0].Id);
+        }
+      } catch (err) {
+        console.error('Failed to load cabinets:', err);
+        setError('Falha ao carregar armários: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCabinets();
+  }, []);
+
+  // Fetch Fields and Document Types on Cabinet selection change
+  useEffect(() => {
+    if (!selectedCabinet) return;
+
+    const fetchCabinetData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        setSelectedDocType('');
+        
+        const fieldsData = await docuwareService.getCabinetFields(selectedCabinet);
+        
+        // Find document type field
+        const preferredMatch = ['tipo de documento', 'document_type', 'tipo_doc', 'tipo de doc', 'tipo_documento'];
+        const docTypeField = fieldsData.find(f => {
+          const label = (f.DisplayName || f.FieldName || '').toLowerCase();
+          const dbName = (f.DBFieldName || '').toLowerCase();
+          return preferredMatch.some(p => label === p || label.includes(p) || dbName === p || dbName.includes(p));
+        });
+
+        // Find date field
+        const dateMatch = ['data do documento', 'document_date', 'data_doc', 'data_documento', 'data'];
+        const docDateField = fieldsData.find(f => {
+          const label = (f.DisplayName || f.FieldName || '').toLowerCase();
+          const dbName = (f.DBFieldName || '').toLowerCase();
+          return dateMatch.some(p => label === p || label.includes(p) || dbName === p || dbName.includes(p)) && f.DWFieldType === 'Date';
+        });
+
+        if (docDateField) {
+          setCustomDateField(docDateField.DBFieldName);
+        } else {
+          setCustomDateField('DWDocumentDate');
+        }
+
+        if (docTypeField) {
+          setDocTypeFieldName(docTypeField.DBFieldName);
+          const values = await docuwareService.getSelectList(selectedCabinet, docTypeField.DBFieldName);
+          setDocTypeOptions(values.sort((a, b) => String(a).localeCompare(String(b))));
+        } else {
+          setDocTypeFieldName('');
+          setDocTypeOptions([]);
+        }
+      } catch (err) {
+        console.error('Failed to load cabinet details:', err);
+        setError('Falha ao obter detalhes do armário: ' + err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCabinetData();
+  }, [selectedCabinet]);
 
   // Handle SLA configuration inputs
   const handleSlaChange = (key, value) => {
@@ -42,89 +132,172 @@ export default function WorkflowKpiAnalyticsPage() {
     }));
   };
 
-  // CSV parsing logic tailored to DocuWare structure
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleSearch = async () => {
+    if (!selectedCabinet) {
+      setError('Por favor, selecione um armário.');
+      return;
+    }
 
     setLoading(true);
     setError(null);
-    setFileName(file.name);
+    setRawRows([]);
+    setSearchProgress({ current: 0, total: 0 });
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const text = event.target.result;
-        
-        // Detect separator (usually ; or ,)
-        const firstLine = text.split('\n')[0] || '';
-        const separator = firstLine.includes(';') ? ';' : ',';
-
-        // Parse lines, handling quotes correctly
-        const rows = [];
-        const lines = text.split(/\r?\n/);
-        if (lines.length < 2) {
-          throw new Error('O arquivo não contém dados suficientes.');
-        }
-
-        // Clean BOM if present
-        const cleanHeader = lines[0].replace(/^\uFEFF/, '');
-        const headers = cleanHeader.split(separator).map(h => h.trim().replace(/^"|"$/g, ''));
-
-        for (let i = 1; i < lines.length; i++) {
-          const line = lines[i].trim();
-          if (!line) continue;
-
-          // Simple CSV line parser respecting quotes
-          const values = [];
-          let insideQuote = false;
-          let currentValue = '';
-
-          for (let j = 0; j < line.length; j++) {
-            const char = line[j];
-            if (char === '"') {
-              insideQuote = !insideQuote;
-            } else if (char === separator && !insideQuote) {
-              values.push(currentValue.trim().replace(/^"|"$/g, ''));
-              currentValue = '';
-            } else {
-              currentValue += char;
-            }
-          }
-          values.push(currentValue.trim().replace(/^"|"$/g, ''));
-
-          // Map headers to row object
-          const rowObj = {};
-          headers.forEach((header, idx) => {
-            rowObj[header] = values[idx] || '';
-          });
-          rows.push(rowObj);
-        }
-
-        setFileData(rows);
-      } catch (err) {
-        console.error('File parsing error:', err);
-        setError('Falha ao processar o arquivo. Verifique se é uma exportação válida do DocuWare.');
-        setFileData(null);
-      } finally {
-        setLoading(false);
+    try {
+      const filters = [];
+      if (selectedDocType && docTypeFieldName) {
+        filters.push({ fieldName: docTypeFieldName, value: selectedDocType });
       }
-    };
+      if (selectedDateField && (startDate || endDate)) {
+        filters.push({ fieldName: selectedDateField, value: [startDate, endDate] });
+      }
 
-    reader.onerror = () => {
-      setError('Erro na leitura do arquivo.');
+      console.log('Searching docs with filters:', filters);
+      const searchRes = await docuwareService.searchDocuments(selectedCabinet, filters, 1000);
+      const docs = searchRes.items || [];
+      
+      if (docs.length === 0) {
+        setRawRows([]);
+        setError('Nenhum documento encontrado com os filtros selecionados.');
+        return;
+      }
+
+      setSearchProgress({ current: 0, total: docs.length });
+
+      const allRows = [];
+      const BATCH_SIZE = 10;
+
+      const formatDate = (dateString) => {
+        if (!dateString) return '';
+        let d;
+        if (typeof dateString === 'string' && dateString.startsWith('/Date(')) {
+          const timestamp = parseInt(dateString.match(/-?\d+/)[0]);
+          d = new Date(timestamp);
+        } else {
+          d = new Date(dateString);
+        }
+
+        if (!isNaN(d.getTime())) {
+          if (d.getFullYear() < 2000) return '';
+          return d.toISOString().replace('T', ' ').substring(0, 16);
+        }
+        return '';
+      };
+
+      for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+        const batch = docs.slice(i, i + BATCH_SIZE);
+        const batchPromises = batch.map(async (doc) => {
+          const docId = doc.Id;
+          try {
+            // Extract index fields from search result document
+            const docFields = {};
+            if (doc.Fields) {
+              doc.Fields.forEach(f => {
+                const val = f.Item || f.Int || f.Decimal || f.Date || f.DateTime || '';
+                docFields[f.FieldName] = val;
+              });
+            }
+
+            // Fetch History
+            const instances = await workflowAnalyticsService.getHistoryByDocId(docId, selectedCabinet);
+
+            if (!instances || instances.length === 0) {
+              return [{
+                'Instance GUID': '',
+                'DOCID': docId,
+                'Instância': 'Sem Histórico',
+                'Versão': '',
+                'Iniciado Em': '',
+                'Atividade': '',
+                'Tipo Atividade': '',
+                'Decisão': '',
+                'Usuário': '',
+                'Data Início Tarefa': '',
+                'Data Decisão': '',
+                'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+                ...docFields
+              }];
+            }
+
+            const docRows = [];
+            instances.sort((a, b) => (b.Version || 0) - (a.Version || 0));
+
+            instances.forEach(instance => {
+              const steps = instance.HistorySteps || [];
+
+              if (steps.length === 0) {
+                docRows.push({
+                  'Instance GUID': instance.Id,
+                  'DOCID': docId,
+                  'Instância': instance.Name,
+                  'Versão': instance.Version,
+                  'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
+                  'Atividade': '(Sem passos)',
+                  'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+                  ...docFields
+                });
+              } else {
+                steps.forEach(step => {
+                  const infoItem = step.Info?.Item || {};
+                  let validUser = infoItem.UserName || step.User || step.UserName || '';
+                  if (!validUser && infoItem.AssignedUsers && Array.isArray(infoItem.AssignedUsers)) {
+                    validUser = infoItem.AssignedUsers.join(', ');
+                  }
+
+                  const validDate = infoItem.DecisionDate || step.StepDate || step.TimeStamp || '';
+                  const validDecision = infoItem.DecisionName || step.DecisionLabel || '';
+                  const stepStartDate = step.StepDate || '';
+
+                  docRows.push({
+                    'Instance GUID': instance.Id,
+                    'DOCID': docId,
+                    'Instância': instance.Name,
+                    'Versão': instance.Version,
+                    'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
+                    'Atividade': step.ActivityName || step.Name,
+                    'Tipo Atividade': step.ActivityType,
+                    'Data Início Tarefa': formatDate(stepStartDate),
+                    'Decisão': validDecision,
+                    'Usuário': validUser,
+                    'Data Decisão': formatDate(validDate),
+                    'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+                    ...docFields
+                  });
+                });
+              }
+            });
+            return docRows;
+          } catch (err) {
+            console.error(`Error processing doc ${docId}`, err);
+            return [{
+              'DOCID': docId,
+              'Instância': 'ERRO AO BUSCAR HISTÓRICO',
+              'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId)
+            }];
+          }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        batchResults.forEach(res => {
+          if (res) allRows.push(...res);
+        });
+
+        setSearchProgress(prev => ({ ...prev, current: Math.min(prev.current + BATCH_SIZE, prev.total) }));
+      }
+
+      setRawRows(allRows);
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Falha ao pesquisar e analisar: ' + err.message);
+    } finally {
       setLoading(false);
-    };
-
-    // Read as UTF-8
-    reader.readAsText(file, 'utf-8');
+    }
   };
 
   // Run KPI Calculations over all rows using current configs
   const computedData = useMemo(() => {
-    if (!fileData) return [];
-    return fileData.map(row => calculateRowKPIs(row, calendarCountry, customSlas));
-  }, [fileData, calendarCountry, customSlas]);
+    return rawRows.map(row => calculateRowKPIs(row, calendarCountry, customSlas));
+  }, [rawRows, calendarCountry, customSlas]);
 
   // Dashboard Metrics
   const metrics = useMemo(() => {
@@ -307,7 +480,7 @@ export default function WorkflowKpiAnalyticsPage() {
             <select 
               value={calendarCountry} 
               onChange={(e) => setCalendarCountry(e.target.value)}
-              className="bg-transparent border-none focus:outline-none text-sm font-semibold cursor-pointer"
+              className="bg-transparent border-none focus:outline-none text-sm font-semibold cursor-pointer text-gray-700 bg-white"
             >
               <option value="AO">Calendário Angola (AO)</option>
               <option value="PT">Calendário Portugal (PT)</option>
@@ -404,52 +577,83 @@ export default function WorkflowKpiAnalyticsPage() {
       {/* Main Settings Panel */}
       <div className="card bg-base-100 border border-base-200 shadow-xl">
         <div className="card-body p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-end">
-            <div className="form-control">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+            <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold">1. Selecione o Armário</span>
+                <span className="label-text font-bold text-gray-700">1. Selecione o Armário</span>
               </label>
               <select 
                 value={selectedCabinet} 
                 onChange={(e) => setSelectedCabinet(e.target.value)}
-                className="select select-bordered focus:select-primary text-base"
+                className="select select-bordered focus:select-primary text-base text-gray-900 bg-white"
               >
-                {cabinets.map(c => <option key={c} value={c}>{c}</option>)}
+                <option value="">Selecione o armário...</option>
+                {cabinets.map(c => <option key={c.Id} value={c.Id}>{c.Name}</option>)}
               </select>
             </div>
 
-            <div className="form-control">
+            <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold">2. Tipo Documental</span>
+                <span className="label-text font-bold text-gray-700">2. Tipo Documental</span>
               </label>
               <select 
                 value={selectedDocType} 
                 onChange={(e) => setSelectedDocType(e.target.value)}
-                className="select select-bordered focus:select-primary text-base"
+                className="select select-bordered focus:select-primary text-base text-gray-900 bg-white"
+                disabled={!selectedCabinet || docTypeOptions.length === 0}
               >
-                {docTypes.map(d => <option key={d} value={d}>{d}</option>)}
+                <option value="">Todos os tipos documentais</option>
+                {docTypeOptions.map((d, i) => <option key={i} value={d}>{d}</option>)}
               </select>
             </div>
 
-            <div className="form-control">
+            <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold">3. Carregar Histórico do Workflow (DocuWare Export)</span>
+                <span className="label-text font-bold text-gray-700">3. Campo de Data</span>
               </label>
-              <div className="flex gap-2">
-                <label className="flex-1 flex items-center justify-center border-2 border-dashed border-base-300 hover:border-primary rounded-lg cursor-pointer h-12 transition-colors px-4 bg-base-50/50">
-                  <input 
-                    type="file" 
-                    accept=".csv,.prn,.txt" 
-                    onChange={handleFileUpload} 
-                    className="hidden" 
-                  />
-                  <div className="flex items-center gap-2 text-sm font-semibold text-base-content/70">
-                    <FaUpload className="text-primary" />
-                    <span>{fileName ? fileName : 'Escolher arquivo exportação (.prn / .csv)'}</span>
-                  </div>
-                </label>
+              <select
+                className="select select-bordered focus:select-primary text-base text-gray-900 bg-white"
+                value={selectedDateField}
+                onChange={(e) => setSelectedDateField(e.target.value)}
+                disabled={!selectedCabinet}
+              >
+                <option value="DWStoreDateTime">Data Store (Armazenamento)</option>
+                <option value={customDateField}>Data do Documento</option>
+              </select>
+            </div>
+
+            <div className="form-control w-full">
+              <label className="label">
+                <span className="label-text font-bold text-gray-700">4. Período</span>
+              </label>
+              <div className="flex gap-2 items-center">
+                <input
+                  type="date"
+                  className="input input-bordered w-full text-sm text-gray-900 bg-white"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  disabled={!selectedCabinet}
+                />
+                <span className="text-gray-500">a</span>
+                <input
+                  type="date"
+                  className="input input-bordered w-full text-sm text-gray-900 bg-white"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  disabled={!selectedCabinet}
+                />
               </div>
             </div>
+          </div>
+
+          <div className="flex justify-end mt-4">
+            <button
+              onClick={handleSearch}
+              disabled={loading || !selectedCabinet}
+              className="btn btn-primary gap-2 text-white bg-indigo-600 hover:bg-indigo-700 border-none px-6"
+            >
+              <FaSearch /> Buscar e Analisar
+            </button>
           </div>
 
           {error && (
@@ -463,7 +667,7 @@ export default function WorkflowKpiAnalyticsPage() {
       </div>
 
       {/* Analytics Dashboard Results */}
-      {computedData.length > 0 && metrics && (
+      {!loading && computedData.length > 0 && metrics && (
         <div className="space-y-8 animate-fade-in-up">
           {/* Action Row */}
           <div className="flex justify-between items-center bg-base-100 p-4 rounded-xl border border-base-200 shadow-md">
@@ -676,14 +880,14 @@ export default function WorkflowKpiAnalyticsPage() {
       )}
 
       {/* Empty State / Prompt */}
-      {!fileData && !loading && (
+      {computedData.length === 0 && !loading && (
         <div className="flex flex-col items-center justify-center p-16 bg-base-100 rounded-2xl border border-base-200 shadow-xl text-center space-y-4">
           <div className="p-6 bg-primary/5 text-primary rounded-full animate-pulse">
             <FaFileAlt className="w-16 h-16" />
           </div>
           <h2 className="text-2xl font-bold text-base-content">Nenhum histórico carregado</h2>
           <p className="text-base-content/60 max-w-md text-sm">
-            Selecione o armário, o tipo de documento correspondente e faça upload do arquivo `.prn` ou `.csv` exportado do histórico do DocuWare para iniciar a análise.
+            Selecione o armário, o tipo de documento correspondente e defina o período de pesquisa para iniciar a análise operacional e SLA.
           </p>
         </div>
       )}
@@ -692,9 +896,14 @@ export default function WorkflowKpiAnalyticsPage() {
       {loading && (
         <div className="flex flex-col items-center justify-center p-20 space-y-4 bg-base-100 rounded-2xl border border-base-200 shadow-xl">
           <span className="loading loading-spinner loading-lg text-primary"></span>
-          <p className="font-semibold text-base-content/70">Processando e enriquecendo dados do workflow...</p>
+          <p className="font-semibold text-base-content/70">
+            {searchProgress.total > 0 
+              ? `Processando e enriquecendo dados do workflow... (${searchProgress.current} / ${searchProgress.total})`
+              : 'Processando e enriquecendo dados do workflow...'}
+          </p>
         </div>
       )}
     </div>
   );
 }
+
