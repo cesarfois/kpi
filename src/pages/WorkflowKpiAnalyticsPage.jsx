@@ -40,7 +40,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const [searchProgress, setSearchProgress] = useState({ current: 0, total: 0 });
 
   // Local SLA parameterization state
-  const [globalSla, setGlobalSla] = useState(24);
+  const [globalSla, setGlobalSla] = useState(10);
   
   const [showSlaConfig, setShowSlaConfig] = useState(false);
   const [showCsvHelp, setShowCsvHelp] = useState(false);
@@ -782,7 +782,7 @@ export default function WorkflowKpiAnalyticsPage() {
                     <div className="font-bold text-primary text-sm">Definição de SLA (Calc_SLA_Horas)</div>
                     <div className="mt-1"><strong>Descrição:</strong> SLA operacional definido globalmente (em horas úteis).</div>
                     <div className="mt-1"><strong>Campos de Origem:</strong> Definição de SLA configurada na interface.</div>
-                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> globalSla (Default: 24h)</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> globalSla (Default: 10h)</div>
                   </div>
 
                   <div className="p-3 bg-base-200 rounded-lg">

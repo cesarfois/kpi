@@ -41,7 +41,7 @@ export const SLA_CONFIG = {
     'Jurídico': 120,
     'Aprovação': 48
   },
-  'Default': 24
+  'Default': 10
 };
 
 /**
@@ -211,8 +211,8 @@ export function calculateRowKPIs(row, countryCode = 'AO', customSlas = {}) {
   // 3. Calc_HorasUteis
   const businessHours = calculateBusinessHours(dataInicio, dataFim, countryCode);
 
-  // 4. Calc_DiasUteis (assuming standard 8-hour workday for executive analysis)
-  const businessDays = Math.round((businessHours / 8) * 100) / 100;
+  // 4. Calc_DiasUteis (assuming standard 10-hour workday for executive analysis)
+  const businessDays = Math.round((businessHours / 10) * 100) / 100;
 
   // 5. Calc_TempoFormatado
   const tempoFormatado = formatDuration(executionHours);
