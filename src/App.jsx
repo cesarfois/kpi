@@ -11,6 +11,7 @@ import ExportsFileBrowserPage from './pages/ExportsFileBrowserPage';
 import SystemMonitorPage from './pages/SystemMonitorPage';
 import WorkflowKpiAnalyticsPage from './pages/WorkflowKpiAnalyticsPage';
 
+
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -35,25 +36,15 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  const routerBasename = import.meta.env.MODE === 'production' ? '/kpi-analytics' : '';
+
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
       <AuthProvider>
-        <Router>
+        <Router basename={routerBasename}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<CallbackPage />} />
-            
-            <Route
-              path="/kpi-analytics"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <WorkflowKpiAnalyticsPage />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-
             <Route
               path="/workflow-history"
               element={
@@ -86,8 +77,17 @@ function App() {
               }
             />
             <Route path="/system-monitor" element={<SystemMonitorPage />} />
-            <Route path="/" element={<Navigate to="/kpi-analytics" />} />
-            <Route path="*" element={<Navigate to="/kpi-analytics" replace />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <WorkflowKpiAnalyticsPage />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

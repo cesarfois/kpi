@@ -1,50 +1,47 @@
-import { FaBars, FaSignOutAlt, FaUserCircle } from 'react-icons/fa';
-import { useAuth } from '../../context/AuthContext';
+import { FaHistory, FaArrowLeft, FaSync } from 'react-icons/fa';
 
 const Header = () => {
-    const { user, logout } = useAuth();
+    const handleBackToPortal = () => {
+        window.location.href = '/';
+    };
+
+    const handleRefresh = () => {
+        window.location.reload();
+    };
 
     return (
-        <header className="
-            fixed top-0 right-0 z-20 bg-white shadow-sm border-b border-gray-100 h-16
-            transition-all duration-300 ease-in-out flex items-center justify-between px-6
-            left-0
-        ">
-            {/* Left: Title/Brand Only */}
-            <div className="flex items-center gap-4 pl-4">
-                {/* Brand Logo (Image) */}
-                <div className="flex items-center">
-                    <img
-                        src="/logo-rcs-vision.png"
-                        alt="RCS Vision"
-                        className="h-12 w-auto object-contain"
-                    />
+        <header className="fixed top-0 left-0 right-0 z-20 bg-white shadow-sm border-b border-gray-200 h-20 px-6 flex items-center justify-between">
+            {/* Left side: Icon, Title & Subtitle */}
+            <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center shadow-sm">
+                    <FaHistory className="w-6 h-6" />
+                </div>
+                <div className="flex flex-col">
+                    <h1 className="text-xl font-bold text-slate-800 leading-tight">
+                        Workflow KPI Analytics
+                    </h1>
+                    <p className="text-xs text-slate-500 font-medium">
+                        Análise operacional inteligente, indicadores de SLA e exportação enriquecida para workflows DocuWare.
+                    </p>
                 </div>
             </div>
 
-            {/* Right: User User & Actions */}
-            <div className="flex items-center gap-4">
-                {/* Session Timer Removed */}
-
-                <div className="flex items-center gap-3 px-4 py-1.5 rounded-full bg-gray-50 border border-gray-200">
-                    <FaUserCircle className="text-gray-400 text-xl" />
-                    <div className="flex flex-col text-right hidden sm:flex">
-                        <span className="text-sm font-medium text-gray-700 leading-none">
-                            {user?.username || 'Usuário'}
-                        </span>
-                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">
-                            {user?.role || 'Admin'}
-                        </span>
-                    </div>
-                </div>
+            {/* Right side: Action Buttons */}
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={handleBackToPortal}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-sm transition-all cursor-pointer"
+                >
+                    <FaArrowLeft className="text-xs" />
+                    <span>Voltar ao Portal</span>
+                </button>
 
                 <button
-                    onClick={logout}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Sair do Sistema"
+                    onClick={handleRefresh}
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 hover:bg-indigo-100 rounded-lg shadow-sm transition-all cursor-pointer"
                 >
-                    <FaSignOutAlt />
-                    <span className="hidden sm:inline">Sair</span>
+                    <FaSync className="text-xs" />
+                    <span>Atualizar</span>
                 </button>
             </div>
         </header>
