@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   FaHistory, FaFileCsv, FaCheckCircle, 
   FaClock, FaExclamationTriangle, FaUsers, FaArrowRight,
@@ -50,7 +50,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const [showProcessHelp, setShowProcessHelp] = useState(false);
   const [showRespHelp, setShowRespHelp] = useState(false);
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
-  const [pendingDocType, setPendingDocType] = useState('');
+  const pendingDocTypeRef = useRef('');
   const [respTab, setRespTab] = useState('pendencias'); // 'pendencias' | 'historico' | 'gargalos'
 
   // Fetch Cabinets on mount
@@ -113,12 +113,12 @@ export default function WorkflowKpiAnalyticsPage() {
           const values = await docuwareService.getSelectList(selectedCabinet, docTypeField.DBFieldName);
           const sorted = values.sort((a, b) => String(a).localeCompare(String(b)));
           setDocTypeOptions(sorted);
-          if (pendingDocType) {
-            const matched = sorted.find(v => String(v).toLowerCase() === pendingDocType.toLowerCase());
+          if (pendingDocTypeRef.current) {
+            const matched = sorted.find(v => String(v).trim().toLowerCase() === pendingDocTypeRef.current.trim().toLowerCase());
             if (matched) {
               setSelectedDocType(matched);
             }
-            setPendingDocType('');
+            pendingDocTypeRef.current = '';
           }
         } else {
           setDocTypeFieldName('');
@@ -133,7 +133,7 @@ export default function WorkflowKpiAnalyticsPage() {
     };
 
     fetchCabinetData();
-  }, [selectedCabinet, pendingDocType]);
+  }, [selectedCabinet]);
 
   // Handle SLA configuration inputs
   const handleSlaChange = (value) => {
@@ -151,12 +151,12 @@ export default function WorkflowKpiAnalyticsPage() {
           setSelectedDocType(matched);
         } else {
           setSelectedDocType('');
-          setPendingDocType(docType);
+          pendingDocTypeRef.current = docType;
         }
       } else {
         setSelectedDocType('');
         setSelectedCabinet(foundCabinet.Id);
-        setPendingDocType(docType);
+        pendingDocTypeRef.current = docType;
       }
     } else {
       console.warn(`Cabinet not found with keyword: ${cabinetKeyword}`);
