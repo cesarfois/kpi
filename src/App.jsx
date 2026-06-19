@@ -34,11 +34,23 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Dynamic Basename detection based on request path
+const getBasename = () => {
+  const path = window.location.pathname;
+  if (path.startsWith('/kpi-analytics')) {
+    return '/kpi-analytics';
+  }
+  if (path.startsWith('/workflow-kpi-analytics')) {
+    return '/workflow-kpi-analytics';
+  }
+  return '/';
+};
+
 function App() {
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
       <AuthProvider>
-        <Router>
+        <Router basename={getBasename()}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<CallbackPage />} />
