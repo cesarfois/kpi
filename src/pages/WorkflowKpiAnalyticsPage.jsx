@@ -51,6 +51,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const [showRespHelp, setShowRespHelp] = useState(false);
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
   const pendingDocTypeRef = useRef('');
+  const shouldAutoSearchRef = useRef(false);
   const [respTab, setRespTab] = useState('pendencias'); // 'pendencias' | 'historico' | 'gargalos'
 
   // Fetch Cabinets on mount
@@ -113,12 +114,25 @@ export default function WorkflowKpiAnalyticsPage() {
           const values = await docuwareService.getSelectList(selectedCabinet, docTypeField.DBFieldName);
           const sorted = values.sort((a, b) => String(a).localeCompare(String(b)));
           setDocTypeOptions(sorted);
+          let matchedType = '';
           if (pendingDocTypeRef.current) {
             const matched = sorted.find(v => String(v).trim().toLowerCase() === pendingDocTypeRef.current.trim().toLowerCase());
             if (matched) {
               setSelectedDocType(matched);
+              matchedType = matched;
             }
             pendingDocTypeRef.current = '';
+          }
+
+          if (shouldAutoSearchRef.current) {
+            shouldAutoSearchRef.current = false;
+            setTimeout(() => {
+              executeSearch({
+                cabinetId: selectedCabinet,
+                docType: matchedType,
+                docTypeField: docTypeField.DBFieldName
+              });
+            }, 100);
           }
         } else {
           setDocTypeFieldName('');
@@ -143,32 +157,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const applyQuickSearch = (cabinetKeyword, docType, dateField, slaHours) => {
     setError(null);
     const foundCabinet = cabinets.find(c => (c.Name || '').toLowerCase().includes(cabinetKeyword.toLowerCase()));
-    if (foundCabinet) {
-      const isSameCabinet = selectedCabinet === foundCabinet.Id;
-      if (isSameCabinet) {
-        const matched = docTypeOptions.find(v => String(v).trim().toLowerCase() === docType.trim().toLowerCase());
-        if (matched) {
-          setSelectedDocType(matched);
-        } else {
-          setSelectedDocType('');
-          pendingDocTypeRef.current = docType;
-        }
-      } else {
-        setSelectedDocType('');
-        setSelectedCabinet(foundCabinet.Id);
-        pendingDocTypeRef.current = docType;
-      }
-    } else {
-      console.warn(`Cabinet not found with keyword: ${cabinetKeyword}`);
-      setError(`Armário correspondente a "${cabinetKeyword}" não encontrado na lista de armários disponíveis.`);
-      return;
-    }
-
-    // 2. Set SLA and Date field
-    setGlobalSla(slaHours);
-    setSelectedDateField(dateField);
-
-    // 3. Set period to current month (Mês atual)
+    
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
     
@@ -179,12 +168,51 @@ export default function WorkflowKpiAnalyticsPage() {
       return `${year}-${month}-${day}`;
     };
 
-    setStartDate(formatDateLocal(firstDay));
-    setEndDate(formatDateLocal(now));
+    const sDate = formatDateLocal(firstDay);
+    const eDate = formatDateLocal(now);
+
+    setStartDate(sDate);
+    setEndDate(eDate);
+    setGlobalSla(slaHours);
+    setSelectedDateField(dateField);
+
+    if (foundCabinet) {
+      const isSameCabinet = selectedCabinet === foundCabinet.Id;
+      if (isSameCabinet) {
+        const matched = docTypeOptions.find(v => String(v).trim().toLowerCase() === docType.trim().toLowerCase());
+        const finalDocType = matched || '';
+        setSelectedDocType(finalDocType);
+        
+        executeSearch({
+          cabinetId: foundCabinet.Id,
+          docType: finalDocType,
+          docTypeField: docTypeFieldName,
+          dateField: dateField,
+          startDate: sDate,
+          endDate: eDate
+        });
+      } else {
+        shouldAutoSearchRef.current = true;
+        setSelectedDocType('');
+        setSelectedCabinet(foundCabinet.Id);
+        pendingDocTypeRef.current = docType;
+      }
+    } else {
+      console.warn(`Cabinet not found with keyword: ${cabinetKeyword}`);
+      setError(`Armário correspondente a "${cabinetKeyword}" não encontrado na lista de armários disponíveis.`);
+      return;
+    }
   };
 
-  const handleSearch = async () => {
-    if (!selectedCabinet) {
+  const executeSearch = async (params = {}) => {
+    const cabinetId = params.cabinetId !== undefined ? params.cabinetId : selectedCabinet;
+    const docType = params.docType !== undefined ? params.docType : selectedDocType;
+    const dtFieldName = params.docTypeField !== undefined ? params.docTypeField : docTypeFieldName;
+    const dField = params.dateField !== undefined ? params.dateField : selectedDateField;
+    const sDate = params.startDate !== undefined ? params.startDate : startDate;
+    const eDate = params.endDate !== undefined ? params.endDate : endDate;
+
+    if (!cabinetId) {
       setError('Por favor, selecione um armário.');
       return;
     }
@@ -196,15 +224,15 @@ export default function WorkflowKpiAnalyticsPage() {
 
     try {
       const filters = [];
-      if (selectedDocType && docTypeFieldName) {
-        filters.push({ fieldName: docTypeFieldName, value: selectedDocType });
+      if (docType && dtFieldName) {
+        filters.push({ fieldName: dtFieldName, value: docType });
       }
-      if (selectedDateField && (startDate || endDate)) {
-        filters.push({ fieldName: selectedDateField, value: [startDate, endDate] });
+      if (dField && (sDate || eDate)) {
+        filters.push({ fieldName: dField, value: [sDate, eDate] });
       }
 
       console.log('Searching docs with filters:', filters);
-      const searchRes = await docuwareService.searchDocuments(selectedCabinet, filters, 10000);
+      const searchRes = await docuwareService.searchDocuments(cabinetId, filters, 10000);
       const docs = searchRes.items || [];
       
       if (docs.length === 0) {
@@ -263,7 +291,7 @@ export default function WorkflowKpiAnalyticsPage() {
           }
 
           // Fetch History
-          const instances = await workflowAnalyticsService.getHistoryByDocId(docId, selectedCabinet);
+          const instances = await workflowAnalyticsService.getHistoryByDocId(docId, cabinetId);
 
           if (!instances || instances.length === 0) {
             return [{
@@ -278,7 +306,7 @@ export default function WorkflowKpiAnalyticsPage() {
               'Usuário': '',
               'Data Início Tarefa': '',
               'Data Decisão': '',
-              'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+              'Link Documento': docuwareService.getDocumentViewUrl(cabinetId, docId),
               ...docFields
             }];
           }
@@ -297,7 +325,7 @@ export default function WorkflowKpiAnalyticsPage() {
                 'Versão': instance.Version,
                 'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
                 'Atividade': '(Sem passos)',
-                'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+                'Link Documento': docuwareService.getDocumentViewUrl(cabinetId, docId),
                 ...docFields
               });
             } else {
@@ -326,7 +354,7 @@ export default function WorkflowKpiAnalyticsPage() {
                   'Decisão': validDecision,
                   'Usuário': validUser,
                   'Data Decisão': formatDate(validDate),
-                  'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+                  'Link Documento': docuwareService.getDocumentViewUrl(cabinetId, docId),
                   ...docFields
                 });
               });
@@ -338,7 +366,7 @@ export default function WorkflowKpiAnalyticsPage() {
           return [{
             'DOCID': docId,
             'Instância': 'ERRO AO BUSCAR HISTÓRICO',
-            'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId)
+            'Link Documento': docuwareService.getDocumentViewUrl(cabinetId, docId)
           }];
         } finally {
           completedCount++;
@@ -355,6 +383,8 @@ export default function WorkflowKpiAnalyticsPage() {
       setLoading(false);
     }
   };
+
+  const handleSearch = () => executeSearch();
 
   // Run KPI Calculations over all rows using current configs
   const computedData = useMemo(() => {
