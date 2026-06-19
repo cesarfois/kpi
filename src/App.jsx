@@ -9,6 +9,7 @@ import CallbackPage from './pages/CallbackPage';
 import ScheduledExportsPage from './pages/ScheduledExportsPage';
 import ExportsFileBrowserPage from './pages/ExportsFileBrowserPage';
 import SystemMonitorPage from './pages/SystemMonitorPage';
+import WorkflowKpiAnalyticsPage from './pages/WorkflowKpiAnalyticsPage';
 
 
 // Protected Route Wrapper
@@ -76,8 +77,17 @@ function App() {
               }
             />
             <Route path="/system-monitor" element={<SystemMonitorPage />} />
-            <Route path="/" element={<Navigate to="/workflow-history" />} />
-            <Route path="*" element={<Navigate to="/workflow-history" replace />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout>
+                    <WorkflowKpiAnalyticsPage />
+                  </DashboardLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </Router>
       </AuthProvider>
