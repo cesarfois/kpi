@@ -174,6 +174,7 @@ export const tokenManager = {
                 token: access_token,
                 accessToken: access_token,
                 refreshToken: refresh_token,
+                url: process.env.DOCUWARE_URL || (cachedTokens && cachedTokens.url) || 'https://rcsangola.docuware.cloud',
                 expiresAt: Date.now() + ((expires_in || 3600) * 1000),
                 updatedAt: new Date().toISOString(),
                 isServiceAccount: true

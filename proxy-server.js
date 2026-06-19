@@ -462,15 +462,16 @@ app.get('/api/auth/token', async (req, res) => {
         // Try getting current, if 401/error, try refresh
         try {
             const token = await tokenManager.getAccessToken();
+            const url = tokenManager.cachedTokens?.url || process.env.DOCUWARE_URL || 'https://rcsangola.docuware.cloud';
             // Verify if it's likely expired? 
             // For now, just return it. The frontend interceptor will handle 401 by calling /refresh if we had a separate endpoint.
             // But here "getAccessToken" just returns what we have.
             // Let's add a `?refresh=true` flag to force refresh
             if (req.query.refresh === 'true') {
                 const newToken = await tokenManager.refreshAccessToken();
-                return res.json({ token: newToken });
+                return res.json({ token: newToken, url });
             }
-            res.json({ token });
+            res.json({ token, url });
         } catch (e) {
             // Check if we need to refresh?
             // If getAccessToken failed, it means no session.

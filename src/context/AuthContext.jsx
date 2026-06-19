@@ -8,16 +8,29 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is already logged in
-        const storedUser = authService.getCurrentUser();
-        if (storedUser) {
-            setUser(storedUser);
-        }
+        const initAuth = async () => {
+            try {
+                // Setup interceptors for token refresh
+                authService.setupAxiosInterceptors();
 
-        // Setup interceptors for token refresh
-        authService.setupAxiosInterceptors();
+                const storedUser = authService.getCurrentUser();
+                if (storedUser) {
+                    setUser(storedUser);
+                } else {
+                    console.log('🔄 AuthContext: No stored user. Attempting automatic login...');
+                    const autoUser = await authService.autoLogin();
+                    if (autoUser) {
+                        setUser(autoUser);
+                    }
+                }
+            } catch (err) {
+                console.error('❌ AuthContext: Init auth failed:', err.message);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        setLoading(false);
+        initAuth();
     }, []);
 
     const login = async (url) => {

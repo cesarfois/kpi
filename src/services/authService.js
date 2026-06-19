@@ -218,6 +218,33 @@ export const authService = {
     },
 
     /**
+     * Automatically logs in using the backend session/service account
+     */
+    autoLogin: async () => {
+        try {
+            console.log('🔑 Requesting automatic login token from Backend...');
+            const proxyBase = getProxyBaseUrl();
+            const response = await axios.get(`${proxyBase}/api/auth/token`);
+            if (response.data && response.data.token) {
+                const { token, url } = response.data;
+                const authData = {
+                    token,
+                    url,
+                    tokenEndpoint: `https://login-emea.docuware.cloud/connect/token`
+                };
+                sessionStorage.setItem(AUTH_KEY, JSON.stringify(authData));
+                api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                console.log('✅ Automatic login successful for target:', url);
+                return authData;
+            }
+            return null;
+        } catch (error) {
+            console.error('❌ Automatic login request failed:', error.response?.data || error.message);
+            throw error;
+        }
+    },
+
+    /**
      * Setup axios interceptors for automatic token refresh
      */
     setupAxiosInterceptors: () => {
