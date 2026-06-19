@@ -794,27 +794,20 @@ export default function WorkflowKpiAnalyticsPage() {
             <h3 className="text-xs font-extrabold text-base-content/50 uppercase tracking-wider mb-3 flex items-center gap-1.5">
               ⚡ Pesquisas Rápidas (Atalhos)
             </h3>
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-3">
               <button
                 type="button"
-                onClick={() => applyQuickSearch('34 Armazém - Procurement', 'Pedido/Compra de Material', 'DWStoreDateTime', 8)}
-                className="btn btn-outline btn-sm border-base-300 font-semibold gap-1.5 hover:bg-primary hover:text-white transition-all text-xs"
+                onClick={() => applyQuickSearch('34', 'Pedido/Compra de Material', 'DWStoreDateTime', 8)}
+                className="btn btn-sm border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-600 hover:border-amber-600 hover:text-white font-bold gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer rounded-lg px-4 h-9"
               >
                 📦 Pedido de Compra Material
               </button>
               <button
                 type="button"
-                onClick={() => applyQuickSearch('22 Financeiro', 'Pedido de Pagamento', 'DWStoreDateTime', 8)}
-                className="btn btn-outline btn-sm border-base-300 font-semibold gap-1.5 hover:bg-primary hover:text-white transition-all text-xs"
+                onClick={() => applyQuickSearch('22', 'Pedido de pagamento', 'DWStoreDateTime', 8)}
+                className="btn btn-sm border-emerald-300 bg-emerald-50/80 text-emerald-800 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white font-bold gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer rounded-lg px-4 h-9"
               >
                 💳 Pedido de Pagamento
-              </button>
-              <button
-                type="button"
-                onClick={() => applyQuickSearch('34 Armazém - Procurement', 'Guia de Remessa', 'DWStoreDateTime', 8)}
-                className="btn btn-outline btn-sm border-base-300 font-semibold gap-1.5 hover:bg-primary hover:text-white transition-all text-xs"
-              >
-                🚚 Guia de Remessa
               </button>
             </div>
           </div>
