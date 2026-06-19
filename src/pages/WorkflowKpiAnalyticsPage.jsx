@@ -667,46 +667,6 @@ export default function WorkflowKpiAnalyticsPage() {
     <div className="p-6 max-w-[95%] mx-auto space-y-8 animate-fade-in">
       {/* Search panel contains all controls */}
 
-      {/* SLA Configuration Modal/Card */}
-      {showSlaConfig && (
-        <div className="card bg-base-100 border border-base-200 shadow-xl animate-fade-in-down">
-          <div className="card-body p-6">
-            <div className="flex items-center justify-between mb-4 border-b border-base-200 pb-2">
-              <h3 className="text-lg font-bold flex items-center gap-2 text-primary">
-                <FaSlidersH /> SLA Padrão de Análise
-              </h3>
-              <button onClick={() => setShowSlaConfig(false)} className="btn btn-sm btn-circle btn-ghost">✕</button>
-            </div>
-            <p className="text-sm text-base-content/70 mb-2">
-              Valor utilizado como referência padrão para classificação das atividades analisadas. Futuramente poderá ser personalizado por atividade.
-            </p>
-            <div className="bg-indigo-50/70 text-indigo-900/80 p-3 rounded-lg border border-indigo-100/50 text-xs mb-4 max-w-xl">
-              <strong>Entendimento da Janela Operacional:</strong>
-              <p className="mt-0.5 leading-relaxed">
-                O expediente padrão considerado é das <strong>08:00 às 18:00</strong>. Isso significa que o sistema acumula até <strong>10 horas úteis por dia útil</strong> de calendário. 
-                Desta forma, configurar o SLA padrão para <strong>10 horas</strong> equivale exatamente a <strong>1 dia de trabalho útil</strong> acumulado no expediente.
-              </p>
-            </div>
-            <div className="max-w-xs">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text font-bold text-gray-700">SLA Padrão (Horas)</span>
-                </label>
-                <div className="relative">
-                  <input 
-                    type="number" 
-                    value={globalSla} 
-                    onChange={(e) => handleSlaChange(parseFloat(e.target.value) || 0)}
-                    className="input input-bordered focus:input-primary w-full pr-12 font-bold"
-                    min="1"
-                  />
-                  <span className="absolute right-4 top-3 text-sm text-base-content/50 font-semibold">horas</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Calendar Explanation Modal/Card */}
       {showCalendarHelp && (
@@ -938,6 +898,47 @@ export default function WorkflowKpiAnalyticsPage() {
           )}
         </div>
       </div>
+
+      {/* SLA Configuration Modal/Card */}
+      {showSlaConfig && (
+        <div className="card bg-base-100 border border-base-200 shadow-xl animate-fade-in-down">
+          <div className="card-body p-6">
+            <div className="flex items-center justify-between mb-4 border-b border-base-200 pb-2">
+              <h3 className="text-lg font-bold flex items-center gap-2 text-primary">
+                <FaSlidersH /> SLA Padrão de Análise
+              </h3>
+              <button onClick={() => setShowSlaConfig(false)} className="btn btn-sm btn-circle btn-ghost">✕</button>
+            </div>
+            <p className="text-sm text-base-content/70 mb-2">
+              Valor utilizado como referência padrão para classificação das atividades analisadas. Futuramente poderá ser personalizado por atividade.
+            </p>
+            <div className="bg-indigo-50/70 text-indigo-900/80 p-3 rounded-lg border border-indigo-100/50 text-xs mb-4 max-w-xl">
+              <strong>Entendimento da Janela Operacional:</strong>
+              <p className="mt-0.5 leading-relaxed">
+                O expediente padrão considerado é das <strong>08:00 às 18:00</strong>. Isso significa que o sistema acumula até <strong>10 horas úteis por dia útil</strong> de calendário. 
+                Desta forma, configurar o SLA padrão para <strong>10 horas</strong> equivale exatamente a <strong>1 dia de trabalho útil</strong> acumulado no expediente.
+              </p>
+            </div>
+            <div className="max-w-xs">
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text font-bold text-gray-750">SLA Padrão (Horas)</span>
+                </label>
+                <div className="relative">
+                  <input 
+                    type="number" 
+                    value={globalSla} 
+                    onChange={(e) => handleSlaChange(parseFloat(e.target.value) || 0)}
+                    className="input input-bordered focus:input-primary w-full pr-12 font-bold bg-white text-gray-900"
+                    min="1"
+                  />
+                  <span className="absolute right-4 top-3 text-sm text-base-content/50 font-semibold">horas</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Analytics Dashboard Results */}
       {!loading && computedData.length > 0 && metrics && (
