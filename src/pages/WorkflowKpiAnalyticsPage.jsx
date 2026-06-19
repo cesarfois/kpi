@@ -47,6 +47,8 @@ export default function WorkflowKpiAnalyticsPage() {
   const [showSlaChartHelp, setShowSlaChartHelp] = useState(false);
   const [showPerformanceHelp, setShowPerformanceHelp] = useState(false);
   const [showCriticalHelp, setShowCriticalHelp] = useState(false);
+  const [showProcessHelp, setShowProcessHelp] = useState(false);
+  const [showRespHelp, setShowRespHelp] = useState(false);
   const [respTab, setRespTab] = useState('pendencias'); // 'pendencias' | 'historico' | 'gargalos'
 
   // Fetch Cabinets on mount
@@ -941,9 +943,38 @@ export default function WorkflowKpiAnalyticsPage() {
           {/* Tempo Médio do Processo Analysis */}
           {processDurations && (
             <div className="card bg-base-100 border border-base-200 shadow-lg p-6 animate-fade-in">
-              <h3 className="text-lg font-bold flex items-center gap-2 mb-4">
-                <FaClock className="text-primary" /> Tempo Médio do Processo (Início ao Fim do Documento)
-              </h3>
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <FaClock className="text-primary" /> Tempo Médio do Processo (Início ao Fim do Documento)
+                </h3>
+                <button 
+                  onClick={() => setShowProcessHelp(!showProcessHelp)}
+                  className="btn btn-outline btn-circle btn-xs text-info border-info/20 hover:bg-info/10"
+                  title="Como é calculado o tempo do processo?"
+                >
+                  <FaInfoCircle className="w-3.5 h-3.5 animate-pulse" />
+                </button>
+              </div>
+
+              {showProcessHelp && (
+                <div className="bg-base-200/50 p-4 rounded-lg border border-base-300 text-xs mb-4 space-y-2 animate-fade-in text-base-content/85 font-sans">
+                  <div className="flex justify-between items-center border-b border-base-300 pb-2">
+                    <span className="font-bold text-primary flex items-center gap-1.5">
+                      <FaInfoCircle className="w-4 h-4" /> Cálculo do Tempo do Processo
+                    </span>
+                    <button onClick={() => setShowProcessHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+                  </div>
+                  <div className="space-y-1.5 leading-relaxed">
+                    <p>O tempo do processo mede o ciclo completo de vida de cada documento (<code>DOCID</code>) do início ao fim.</p>
+                    <p><strong>Fórmula por Documento:</strong> <code>Tempo do Documento = (Última Data de Decisão ou Agora) - Primeira Data de Início de Tarefa</code> (calculado em horas corridas).</p>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li><strong>Tempo Médio Processo:</strong> Média aritmética do tempo total de todos os documentos analisados no período.</li>
+                      <li><strong>Mais Rápido:</strong> O documento que completou o fluxo com o menor tempo registrado (ou ativo com menor tempo).</li>
+                      <li><strong>Mais Demorado:</strong> O documento que levou mais tempo para completar o fluxo (ou ativo com maior tempo).</li>
+                    </ul>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-100/50 flex flex-col justify-between shadow-sm">
                   <span className="text-xs uppercase font-extrabold text-indigo-900/60">Tempo Médio Processo</span>
@@ -1020,9 +1051,18 @@ export default function WorkflowKpiAnalyticsPage() {
             <div className="card bg-base-100 border border-base-200 shadow-lg p-6 flex flex-col justify-between">
               <div>
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 border-b border-base-200 pb-3">
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-indigo-600"></span> Análise de Responsabilidade Operacional
-                  </h3>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold flex items-center gap-2">
+                      <span className="w-3 h-3 rounded-full bg-indigo-600"></span> Análise de Responsabilidade Operacional
+                    </h3>
+                    <button 
+                      onClick={() => setShowRespHelp(!showRespHelp)}
+                      className="btn btn-outline btn-circle btn-xs text-info border-info/20 hover:bg-info/10"
+                      title="Legenda da Responsabilidade Operacional"
+                    >
+                      <FaInfoCircle className="w-3.5 h-3.5 animate-pulse" />
+                    </button>
+                  </div>
                   {/* Tab Selector */}
                   <div className="tabs tabs-boxed bg-base-200/60 p-1 rounded-lg">
                     <button 
@@ -1045,6 +1085,44 @@ export default function WorkflowKpiAnalyticsPage() {
                     </button>
                   </div>
                 </div>
+
+                {showRespHelp && (
+                  <div className="bg-base-200/50 p-4 rounded-lg border border-base-300 text-xs mb-4 space-y-2.5 animate-fade-in text-base-content/85 font-sans leading-relaxed">
+                    <div className="flex justify-between items-center border-b border-base-300 pb-2">
+                      <span className="font-bold text-primary flex items-center gap-1.5">
+                        <FaInfoCircle className="w-4 h-4" /> Cálculo de Responsabilidade Operacional
+                      </span>
+                      <button onClick={() => setShowRespHelp(false)} className="btn btn-xs btn-circle btn-ghost">✕</button>
+                    </div>
+                    <div className="space-y-3">
+                      <div>
+                        <span className="font-bold text-indigo-600">Pendências Atuais:</span> Foca nas tarefas ativas (sem data de conclusão).
+                        <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                          <li><strong>Aberto:</strong> Quantidade de tarefas ativas sob responsabilidade do usuário ou fila de grupo.</li>
+                          <li><strong>Tempo Médio Parado:</strong> Média de horas úteis (expediente 08:00 - 18:00, sem finais de semana/feriados) que as tarefas estão abertas.</li>
+                          <li><strong>Maior Atraso:</strong> Maior tempo decorrido corrido de uma tarefa pendente, expresso em dias úteis (calculado como <code>horas_corridas / 24</code>, depois ajustado para o divisor diário).</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <span className="font-bold text-indigo-600">Histórico:</span> Foca nas tarefas concluídas.
+                        <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                          <li><strong>Concluído:</strong> Quantidade de tarefas finalizadas pelo usuário no período selecionado.</li>
+                          <li><strong>Tempo Médio:</strong> Média de horas úteis ativas gastas no processamento dessas tarefas concluídas.</li>
+                          <li><strong>SLA (%):</strong> Percentual de tarefas concluídas que foram finalizadas dentro do prazo do SLA configurado.</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <span className="font-bold text-indigo-600">Gargalos:</span> Foca em todas as tarefas agrupadas por Etapa/Atividade.
+                        <ul className="list-disc pl-5 mt-1 space-y-0.5">
+                          <li><strong>Volume:</strong> Total de tarefas (ativas e concluídas) registradas na respectiva atividade.</li>
+                          <li><strong>Atrasadas:</strong> Quantidade de tarefas que excederam o SLA (em Atraso Moderado ou Atraso Inaceitável).</li>
+                          <li><strong>Tempo Médio:</strong> Média de horas úteis consumidas nesta atividade.</li>
+                          <li><strong>SLA (%):</strong> Percentual de conformidade (tarefas que respeitaram o SLA).</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Tab 1: Pendências Atuais */}
                 {respTab === 'pendencias' && (
