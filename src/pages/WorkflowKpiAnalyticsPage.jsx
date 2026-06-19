@@ -606,6 +606,7 @@ export default function WorkflowKpiAnalyticsPage() {
             >
               <option value="AO">Calendário Angola (AO)</option>
               <option value="PT">Calendário Portugal (PT)</option>
+              <option value="BOTH">Ambos os Calendários (AO + PT)</option>
             </select>
           </label>
 

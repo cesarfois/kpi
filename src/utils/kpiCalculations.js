@@ -87,6 +87,9 @@ export function isHoliday(date, countryCode = 'AO') {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   const key = `${month}-${day}`;
+  if (countryCode === 'BOTH') {
+    return (HOLIDAYS['AO'] || []).includes(key) || (HOLIDAYS['PT'] || []).includes(key);
+  }
   return (HOLIDAYS[countryCode] || []).includes(key);
 }
 
