@@ -9,7 +9,7 @@ import CallbackPage from './pages/CallbackPage';
 import ScheduledExportsPage from './pages/ScheduledExportsPage';
 import ExportsFileBrowserPage from './pages/ExportsFileBrowserPage';
 import SystemMonitorPage from './pages/SystemMonitorPage';
-import WorkflowKpiAnalyticsPage from './pages/WorkflowKpiAnalyticsPage';
+
 
 // Protected Route Wrapper
 const ProtectedRoute = ({ children }) => {
@@ -42,18 +42,6 @@ function App() {
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/auth/callback" element={<CallbackPage />} />
-            
-            <Route
-              path="/kpi-analytics"
-              element={
-                <ProtectedRoute>
-                  <DashboardLayout>
-                    <WorkflowKpiAnalyticsPage />
-                  </DashboardLayout>
-                </ProtectedRoute>
-              }
-            />
-
             <Route
               path="/workflow-history"
               element={
@@ -86,8 +74,8 @@ function App() {
               }
             />
             <Route path="/system-monitor" element={<SystemMonitorPage />} />
-            <Route path="/" element={<Navigate to="/kpi-analytics" />} />
-            <Route path="*" element={<Navigate to="/kpi-analytics" replace />} />
+            <Route path="/" element={<Navigate to="/workflow-history" />} />
+            <Route path="*" element={<Navigate to="/workflow-history" replace />} />
           </Routes>
         </Router>
       </AuthProvider>

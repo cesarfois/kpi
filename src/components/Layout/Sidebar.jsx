@@ -7,8 +7,7 @@ import {
     FaHistory,
     FaClock,
     FaFolderOpen,
-    FaTerminal,
-    FaChartLine
+    FaTerminal
 } from 'react-icons/fa';
 
 const STORAGE_KEY = 'sidebar_expanded_sections';
@@ -45,7 +44,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             title: 'Power BI Export',
             key: 'pbi',
             items: [
-                { path: '/kpi-analytics', label: 'KPI Analytics', icon: <FaChartLine /> },
                 { path: '/workflow-history', label: 'Histórico Workflow ID', icon: <FaHistory /> },
                 { path: '/scheduled-exports', label: 'Agendar Exportação', icon: <FaClock /> },
                 { path: '/exports', label: 'Arquivos Exportados', icon: <FaFolderOpen /> },

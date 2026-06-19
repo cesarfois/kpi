@@ -1,9 +1,9 @@
 services:
-  workflow-kpi-analytics:
+  rcsvision:
     build: .
-    container_name: workflow-kpi-analytics-app
+    container_name: rcsvision-app
     ports:
-      - "3011:3001"
+      - "3001:3001"
     volumes:
       - ./exports:/app/exports
     environment:
