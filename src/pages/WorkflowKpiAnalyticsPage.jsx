@@ -808,9 +808,9 @@ export default function WorkflowKpiAnalyticsPage() {
 
                   <div className="p-3 bg-base-200 rounded-lg">
                     <div className="font-bold text-primary text-sm">Calc_DiasUteis</div>
-                    <div className="mt-1"><strong>Descrição:</strong> Horas ativas úteis convertidas para dias úteis comerciais.</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Horas ativas úteis convertidas para dias úteis de trabalho.</div>
                     <div className="mt-1"><strong>Campos de Origem:</strong> `Calc_HorasUteis`.</div>
-                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Calc_HorasUteis / 8 (Jornada média diária comercial)</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Calc_HorasUteis / 10 (Jornada média diária de expediente de 10h)</div>
                   </div>
 
                   <div className="p-3 bg-base-200 rounded-lg">
@@ -841,6 +841,13 @@ export default function WorkflowKpiAnalyticsPage() {
                     <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Se Data Decisão preenchida -&gt; "Concluída"; Senão -&gt; "Pendente"</div>
                   </div>
 
+                  <div className="p-3 bg-base-200 rounded-lg">
+                    <div className="font-bold text-primary text-sm">Calc_DesvioSLAHoras</div>
+                    <div className="mt-1"><strong>Descrição:</strong> Desvio em relação ao SLA (positivo indica atraso/tempo excedido; negativo indica adiantamento/prazo cumprido).</div>
+                    <div className="mt-1"><strong>Campos de Origem:</strong> `Calc_HorasUteis`, `Calc_SLA_Horas`.</div>
+                    <div className="mt-1 text-gray-500 font-mono"><strong>Fórmula:</strong> Calc_HorasUteis - Calc_SLA_Horas</div>
+                  </div>
+
                   <div className="p-3 bg-base-200 rounded-lg md:col-span-2">
                     <div className="font-bold text-primary text-sm">Calc_ResponsavelSLA</div>
                     <div className="mt-1"><strong>Descrição:</strong> Determinação de autoria para o cumprimento/atraso do SLA (evita culpar indivíduos por tarefas/atrasos compartilhados em fila de grupo).</div>
@@ -855,41 +862,76 @@ export default function WorkflowKpiAnalyticsPage() {
           {/* Metrics Executive Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
             <div className="card bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg p-4 flex flex-col justify-between border-none">
-              <span className="text-xs uppercase font-extrabold text-white/80">Cumprimento SLA</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-extrabold text-white/85">Cumprimento SLA</span>
+                <div className="tooltip tooltip-bottom tooltip-primary" data-tip="Fórmula: (Tarefas Dentro do SLA / Total de Tarefas) * 100">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-white/70 hover:text-white cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold mt-2">{metrics.dentroSlaPct}%</span>
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between">
-              <span className="text-xs uppercase font-bold text-base-content/50">Total Tarefas</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-bold text-base-content/50">Total Tarefas</span>
+                <div className="tooltip tooltip-bottom tooltip-neutral" data-tip="Total de tarefas registradas no período selecionado">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-base-content/30 hover:text-base-content/65 cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold text-base-content mt-2">{metrics.total}</span>
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between">
-              <span className="text-xs uppercase font-bold text-success/70">Concluídas</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-bold text-success/75">Concluídas</span>
+                <div className="tooltip tooltip-bottom tooltip-success" data-tip="Tarefas finalizadas (que possuem data de decisão preenchida)">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-success/40 hover:text-success/70 cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold text-success mt-2">{metrics.concluidas}</span>
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between">
-              <span className="text-xs uppercase font-bold text-amber-500/70">Pendentes</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-bold text-amber-500/75">Pendentes</span>
+                <div className="tooltip tooltip-bottom tooltip-warning" data-tip="Tarefas ativas em andamento (data de decisão em branco)">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-amber-500/40 hover:text-amber-500/70 cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold text-amber-500 mt-2">{metrics.pendentes}</span>
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between border-l-4 border-l-success">
-              <span className="text-xs uppercase font-bold text-success">Dentro do SLA</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-bold text-success">Dentro do SLA</span>
+                <div className="tooltip tooltip-bottom tooltip-success" data-tip="Tarefas resolvidas ou ativas dentro do limite de SLA de 10h úteis">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-success/40 hover:text-success/70 cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold text-success mt-2">
                 {metrics.dentroSLA} <span className="text-xs font-normal text-base-content/50">({metrics.dentroSlaPct}%)</span>
               </span>
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between border-l-4 border-l-warning">
-              <span className="text-xs uppercase font-bold text-warning">Atraso Moderado</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-bold text-warning">Atraso Moderado</span>
+                <div className="tooltip tooltip-bottom tooltip-warning" data-tip="Tarefas que excederam o SLA mas estão dentro do dobro do limite (entre 10h e 20h úteis)">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-warning/40 hover:text-warning/70 cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold text-warning mt-2">
                 {metrics.atrasoModerado} <span className="text-xs font-normal text-base-content/50">({metrics.atrasoModeradoPct}%)</span>
               </span>
             </div>
 
             <div className="card bg-base-100 border border-base-200 shadow-md p-4 flex flex-col justify-between border-l-4 border-l-error">
-              <span className="text-xs uppercase font-bold text-error">Atraso Inaceitável</span>
+              <div className="flex justify-between items-center w-full">
+                <span className="text-xs uppercase font-bold text-error">Atraso Inaceitável</span>
+                <div className="tooltip tooltip-bottom tooltip-error" data-tip="Tarefas com atraso grave superior ao dobro do limite de SLA (mais de 20h úteis)">
+                  <FaInfoCircle className="w-3.5 h-3.5 text-error/40 hover:text-error/70 cursor-pointer" />
+                </div>
+              </div>
               <span className="text-3xl font-extrabold text-error mt-2">
                 {metrics.atrasoInaceitavel} <span className="text-xs font-normal text-base-content/50">({metrics.atrasoInaceitavelPct}%)</span>
               </span>
