@@ -665,36 +665,7 @@ export default function WorkflowKpiAnalyticsPage() {
 
   return (
     <div className="p-6 max-w-[95%] mx-auto space-y-8 animate-fade-in">
-      {/* Controls Row */}
-      <div className="flex flex-wrap justify-end items-center gap-3">
-        <label className="input input-bordered flex items-center gap-2 select-sm h-10 bg-white">
-          <FaCalendarAlt className="text-base-content/40" />
-          <select 
-            value={calendarCountry} 
-            onChange={(e) => setCalendarCountry(e.target.value)}
-            className="bg-transparent border-none focus:outline-none text-sm font-semibold cursor-pointer text-gray-700 bg-white"
-          >
-            <option value="AO">Calendário Angola (AO)</option>
-            <option value="PT">Calendário Portugal (PT)</option>
-            <option value="BOTH">Ambos os Calendários (AO + PT)</option>
-          </select>
-        </label>
-
-        <button 
-          onClick={() => setShowCalendarHelp(!showCalendarHelp)}
-          className="btn btn-outline btn-circle btn-sm text-info border-info/30 hover:bg-info/10 h-10 w-10 flex items-center justify-center bg-white"
-          title="Como funcionam os feriados e calendários?"
-        >
-          <FaInfoCircle className="w-4 h-4 animate-pulse" />
-        </button>
-
-        <button 
-          onClick={() => setShowSlaConfig(!showSlaConfig)}
-          className="btn btn-outline btn-sm h-10 gap-2 border-base-300 hover:bg-base-200 bg-white"
-        >
-          <FaSlidersH /> SLA Padrão de Análise
-        </button>
-      </div>
+      {/* Search panel contains all controls */}
 
       {/* SLA Configuration Modal/Card */}
       {showSlaConfig && (
@@ -816,33 +787,62 @@ export default function WorkflowKpiAnalyticsPage() {
       {/* Main Settings Panel */}
       <div className="card bg-base-100 border border-base-200 shadow-xl">
         <div className="card-body p-6">
-          {/* Pesquisas Rápidas Presets */}
-          <div className="mb-5 pb-5 border-b border-base-200">
-            <h3 className="text-xs font-extrabold text-base-content/50 uppercase tracking-wider mb-3 flex items-center gap-1.5">
-              ⚡ Pesquisas Rápidas (Atalhos)
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              <button
+          {/* Top Row: Presets & Calendar Select */}
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            {/* Presets (Left) */}
+            <div>
+              <h3 className="text-xs font-extrabold text-amber-500 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                ⚡ Pesquisas Rápidas (Atalhos)
+              </h3>
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => applyQuickSearch('34', 'Pedido/Compra de Material', 'DWStoreDateTime', 8)}
+                  className="btn btn-sm border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-600 hover:border-amber-600 hover:text-white font-bold gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer rounded-lg px-4 h-9"
+                >
+                  📦 Pedido de Compra Material
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyQuickSearch('22', 'Pedido de pagamento', 'DWStoreDateTime', 8)}
+                  className="btn btn-sm border-emerald-300 bg-emerald-50/80 text-emerald-800 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white font-bold gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer rounded-lg px-4 h-9"
+                >
+                  💳 Pedido de Pagamento
+                </button>
+              </div>
+            </div>
+
+            {/* Calendar Selector (Right) */}
+            <div className="flex items-center gap-2 bg-gray-50/80 p-2 rounded-lg border border-gray-200/50 self-end md:self-auto">
+              <div className="flex items-center gap-1 bg-white border border-black rounded-lg px-2 h-10">
+                <FaCalendarAlt className="text-base-content/40" />
+                <select 
+                  value={calendarCountry} 
+                  onChange={(e) => setCalendarCountry(e.target.value)}
+                  className="bg-transparent border-none focus:outline-none text-sm font-semibold cursor-pointer text-gray-700 bg-white"
+                >
+                  <option value="AO">Calendário Angola (AO)</option>
+                  <option value="PT">Calendário Portugal (PT)</option>
+                  <option value="BOTH">Ambos os Calendários (AO + PT)</option>
+                </select>
+              </div>
+
+              <button 
                 type="button"
-                onClick={() => applyQuickSearch('34', 'Pedido/Compra de Material', 'DWStoreDateTime', 8)}
-                className="btn btn-sm border-amber-300 bg-amber-50/80 text-amber-800 hover:bg-amber-600 hover:border-amber-600 hover:text-white font-bold gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer rounded-lg px-4 h-9"
+                onClick={() => setShowCalendarHelp(!showCalendarHelp)}
+                className="btn btn-circle btn-sm bg-sky-50 text-sky-500 border-none hover:bg-sky-100 h-10 w-10 flex items-center justify-center"
+                title="Como funcionam os feriados e calendários?"
               >
-                📦 Pedido de Compra Material
-              </button>
-              <button
-                type="button"
-                onClick={() => applyQuickSearch('22', 'Pedido de pagamento', 'DWStoreDateTime', 8)}
-                className="btn btn-sm border-emerald-300 bg-emerald-50/80 text-emerald-800 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white font-bold gap-2 shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.03] active:scale-95 cursor-pointer rounded-lg px-4 h-9"
-              >
-                💳 Pedido de Pagamento
+                <FaInfoCircle className="w-5 h-5 animate-pulse" />
               </button>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
+          {/* Grid fields */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end mb-6">
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold text-gray-700">1. Selecione o Armário</span>
+                <span className="label-text font-bold text-gray-750">1. Selecione o Armário</span>
               </label>
               <select 
                 value={selectedCabinet} 
@@ -856,7 +856,7 @@ export default function WorkflowKpiAnalyticsPage() {
 
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold text-gray-700">2. Tipo Documental</span>
+                <span className="label-text font-bold text-gray-750">2. Tipo Documental</span>
               </label>
               <select 
                 value={selectedDocType} 
@@ -871,7 +871,7 @@ export default function WorkflowKpiAnalyticsPage() {
 
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold text-gray-700">3. Campo de Data</span>
+                <span className="label-text font-bold text-gray-750">3. Campo de Data</span>
               </label>
               <select
                 className="select select-bordered focus:select-primary text-base text-gray-900 bg-white"
@@ -886,7 +886,7 @@ export default function WorkflowKpiAnalyticsPage() {
 
             <div className="form-control w-full">
               <label className="label">
-                <span className="label-text font-bold text-gray-700">4. Período</span>
+                <span className="label-text font-bold text-gray-750">4. Período</span>
               </label>
               <div className="flex gap-2 items-center">
                 <input
@@ -908,11 +908,22 @@ export default function WorkflowKpiAnalyticsPage() {
             </div>
           </div>
 
-          <div className="flex justify-end mt-4">
+          {/* Action buttons row */}
+          <div className="flex justify-between items-center mt-2">
+            <div>
+              <button 
+                type="button"
+                onClick={() => setShowSlaConfig(!showSlaConfig)}
+                className="btn btn-outline btn-sm h-11 gap-2 border-gray-300 hover:bg-gray-100 text-gray-700 bg-white px-4 rounded-lg font-bold"
+              >
+                <FaSlidersH /> SLA Padrão de Análise
+              </button>
+            </div>
+            
             <button
               onClick={handleSearch}
               disabled={loading || !selectedCabinet}
-              className="btn btn-primary gap-2 text-white bg-indigo-600 hover:bg-indigo-700 border-none px-6"
+              className="btn btn-primary gap-2 text-white bg-indigo-600 hover:bg-indigo-700 border-none px-6 h-11 rounded-lg font-bold"
             >
               <FaSearch /> Buscar e Analisar
             </button>
