@@ -50,6 +50,7 @@ export default function WorkflowKpiAnalyticsPage() {
   const [showProcessHelp, setShowProcessHelp] = useState(false);
   const [showRespHelp, setShowRespHelp] = useState(false);
   const [showCalendarHelp, setShowCalendarHelp] = useState(false);
+  const [pendingDocType, setPendingDocType] = useState('');
   const [respTab, setRespTab] = useState('pendencias'); // 'pendencias' | 'historico' | 'gargalos'
 
   // Fetch Cabinets on mount
@@ -110,7 +111,15 @@ export default function WorkflowKpiAnalyticsPage() {
         if (docTypeField) {
           setDocTypeFieldName(docTypeField.DBFieldName);
           const values = await docuwareService.getSelectList(selectedCabinet, docTypeField.DBFieldName);
-          setDocTypeOptions(values.sort((a, b) => String(a).localeCompare(String(b))));
+          const sorted = values.sort((a, b) => String(a).localeCompare(String(b)));
+          setDocTypeOptions(sorted);
+          if (pendingDocType) {
+            const matched = sorted.find(v => String(v).toLowerCase() === pendingDocType.toLowerCase());
+            if (matched) {
+              setSelectedDocType(matched);
+            }
+            setPendingDocType('');
+          }
         } else {
           setDocTypeFieldName('');
           setDocTypeOptions([]);
@@ -124,11 +133,43 @@ export default function WorkflowKpiAnalyticsPage() {
     };
 
     fetchCabinetData();
-  }, [selectedCabinet]);
+  }, [selectedCabinet, pendingDocType]);
 
   // Handle SLA configuration inputs
   const handleSlaChange = (value) => {
     setGlobalSla(value);
+  };
+
+  const applyQuickSearch = (cabinetName, docType, dateField, slaHours) => {
+    setError(null);
+    // 1. Find cabinet matching the name (using case-insensitive partial match)
+    const foundCabinet = cabinets.find(c => (c.Name || '').toLowerCase().includes(cabinetName.toLowerCase()));
+    if (foundCabinet) {
+      setSelectedCabinet(foundCabinet.Id);
+      setPendingDocType(docType);
+    } else {
+      console.warn(`Cabinet not found: ${cabinetName}`);
+      setError(`Armário "${cabinetName}" não encontrado na lista de armários disponíveis.`);
+      return;
+    }
+
+    // 2. Set SLA and Date field
+    setGlobalSla(slaHours);
+    setSelectedDateField(dateField);
+
+    // 3. Set period to current month (Mês atual)
+    const now = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    
+    const formatDateLocal = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+
+    setStartDate(formatDateLocal(firstDay));
+    setEndDate(formatDateLocal(now));
   };
 
   const handleSearch = async () => {
@@ -748,6 +789,36 @@ export default function WorkflowKpiAnalyticsPage() {
       {/* Main Settings Panel */}
       <div className="card bg-base-100 border border-base-200 shadow-xl">
         <div className="card-body p-6">
+          {/* Pesquisas Rápidas Presets */}
+          <div className="mb-5 pb-5 border-b border-base-200">
+            <h3 className="text-xs font-extrabold text-base-content/50 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+              ⚡ Pesquisas Rápidas (Atalhos)
+            </h3>
+            <div className="flex flex-wrap gap-2.5">
+              <button
+                type="button"
+                onClick={() => applyQuickSearch('34 Armazém - Procurement', 'Pedido/Compra de Material', 'DWStoreDateTime', 8)}
+                className="btn btn-outline btn-sm border-base-300 font-semibold gap-1.5 hover:bg-primary hover:text-white transition-all text-xs"
+              >
+                📦 Pedido de Compra Material
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickSearch('22 Financeiro', 'Pedido de Pagamento', 'DWStoreDateTime', 8)}
+                className="btn btn-outline btn-sm border-base-300 font-semibold gap-1.5 hover:bg-primary hover:text-white transition-all text-xs"
+              >
+                💳 Pedido de Pagamento
+              </button>
+              <button
+                type="button"
+                onClick={() => applyQuickSearch('34 Armazém - Procurement', 'Guia de Remessa', 'DWStoreDateTime', 8)}
+                className="btn btn-outline btn-sm border-base-300 font-semibold gap-1.5 hover:bg-primary hover:text-white transition-all text-xs"
+              >
+                🚚 Guia de Remessa
+              </button>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-end">
             <div className="form-control w-full">
               <label className="label">
