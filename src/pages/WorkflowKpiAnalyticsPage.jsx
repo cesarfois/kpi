@@ -626,9 +626,16 @@ export default function WorkflowKpiAnalyticsPage() {
               </h3>
               <button onClick={() => setShowSlaConfig(false)} className="btn btn-sm btn-circle btn-ghost">✕</button>
             </div>
-            <p className="text-sm text-base-content/70 mb-4">
+            <p className="text-sm text-base-content/70 mb-2">
               Valor utilizado como referência padrão para classificação das atividades analisadas. Futuramente poderá ser personalizado por atividade.
             </p>
+            <div className="bg-indigo-50/70 text-indigo-900/80 p-3 rounded-lg border border-indigo-100/50 text-xs mb-4 max-w-xl">
+              <strong>Entendimento da Janela Operacional:</strong>
+              <p className="mt-0.5 leading-relaxed">
+                O expediente padrão considerado é das <strong>08:00 às 18:00</strong>. Isso significa que o sistema acumula até <strong>10 horas úteis por dia útil</strong> de calendário. 
+                Desta forma, configurar o SLA padrão para <strong>10 horas</strong> equivale exatamente a <strong>1 dia de trabalho útil</strong> acumulado no expediente.
+              </p>
+            </div>
             <div className="max-w-xs">
               <div className="form-control">
                 <label className="label">
