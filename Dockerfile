@@ -45,6 +45,7 @@ COPY proxy-server.js ./
 COPY docker-server.js ./
 COPY scheduler.js ./
 COPY tokenManager.js ./
+COPY src/utils/kpiCalculations.js ./src/utils/kpiCalculations.js
 
 # Copy data files and create exports directory
 COPY schedules.json ./
