@@ -164,8 +164,22 @@ export default function WorkflowKpiAnalyticsPage() {
 
       setSearchProgress({ current: 0, total: docs.length });
 
-      const allRows = [];
-      const BATCH_SIZE = 10;
+      // Concurrency pool helper function
+      const pool = async (concurrency, array, iteratorFn) => {
+        const results = [];
+        const executing = new Set();
+        for (const item of array) {
+          const p = Promise.resolve().then(() => iteratorFn(item));
+          results.push(p);
+          executing.add(p);
+          const clean = () => executing.delete(p);
+          p.then(clean, clean);
+          if (executing.size >= concurrency) {
+            await Promise.race(executing);
+          }
+        }
+        return Promise.all(results);
+      };
 
       const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -184,107 +198,102 @@ export default function WorkflowKpiAnalyticsPage() {
         return '';
       };
 
-      for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-        const batch = docs.slice(i, i + BATCH_SIZE);
-        const batchPromises = batch.map(async (doc) => {
-          const docId = doc.Id;
-          try {
-            // Extract index fields from search result document
-            const docFields = {};
-            if (doc.Fields) {
-              doc.Fields.forEach(f => {
-                const val = f.Item || f.Int || f.Decimal || f.Date || f.DateTime || '';
-                docFields[f.FieldName] = val;
-              });
-            }
+      let completedCount = 0;
+      const allRowsResults = await pool(25, docs, async (doc) => {
+        const docId = doc.Id;
+        try {
+          // Extract index fields from search result document
+          const docFields = {};
+          if (doc.Fields) {
+            doc.Fields.forEach(f => {
+              const val = f.Item || f.Int || f.Decimal || f.Date || f.DateTime || '';
+              docFields[f.FieldName] = val;
+            });
+          }
 
-            // Fetch History
-            const instances = await workflowAnalyticsService.getHistoryByDocId(docId, selectedCabinet);
+          // Fetch History
+          const instances = await workflowAnalyticsService.getHistoryByDocId(docId, selectedCabinet);
 
-            if (!instances || instances.length === 0) {
-              return [{
-                'Instance GUID': '',
+          if (!instances || instances.length === 0) {
+            return [{
+              'Instance GUID': '',
+              'DOCID': docId,
+              'Instância': 'Sem Histórico',
+              'Versão': '',
+              'Iniciado Em': '',
+              'Atividade': '',
+              'Tipo Atividade': '',
+              'Decisão': '',
+              'Usuário': '',
+              'Data Início Tarefa': '',
+              'Data Decisão': '',
+              'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
+              ...docFields
+            }];
+          }
+
+          const docRows = [];
+          instances.sort((a, b) => (b.Version || 0) - (a.Version || 0));
+
+          instances.forEach(instance => {
+            const steps = instance.HistorySteps || [];
+
+            if (steps.length === 0) {
+              docRows.push({
+                'Instance GUID': instance.Id,
                 'DOCID': docId,
-                'Instância': 'Sem Histórico',
-                'Versão': '',
-                'Iniciado Em': '',
-                'Atividade': '',
-                'Tipo Atividade': '',
-                'Decisão': '',
-                'Usuário': '',
-                'Data Início Tarefa': '',
-                'Data Decisão': '',
+                'Instância': instance.Name,
+                'Versão': instance.Version,
+                'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
+                'Atividade': '(Sem passos)',
                 'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
                 ...docFields
-              }];
-            }
+              });
+            } else {
+              steps.forEach(step => {
+                const infoItem = step.Info?.Item || {};
+                let validUser = infoItem.UserName || step.User || step.UserName || '';
+                if (!validUser && infoItem.AssignedUsers && Array.isArray(infoItem.AssignedUsers)) {
+                  validUser = infoItem.AssignedUsers.join(', ');
+                }
 
-            const docRows = [];
-            instances.sort((a, b) => (b.Version || 0) - (a.Version || 0));
+                const validDate = infoItem.DecisionDate || step.StepDate || step.TimeStamp || '';
+                const validDecision = infoItem.DecisionName || step.DecisionLabel || '';
+                const stepStartDate = step.StepDate || '';
 
-            instances.forEach(instance => {
-              const steps = instance.HistorySteps || [];
-
-              if (steps.length === 0) {
                 docRows.push({
                   'Instance GUID': instance.Id,
                   'DOCID': docId,
                   'Instância': instance.Name,
                   'Versão': instance.Version,
                   'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
-                  'Atividade': '(Sem passos)',
+                  'Atividade': step.ActivityName || step.Name,
+                  'Tipo Atividade': step.ActivityType,
+                  'Data Início Tarefa': formatDate(stepStartDate),
+                  'Decisão': validDecision,
+                  'Usuário': validUser,
+                  'Data Decisão': formatDate(validDate),
                   'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
                   ...docFields
                 });
-              } else {
-                steps.forEach(step => {
-                  const infoItem = step.Info?.Item || {};
-                  let validUser = infoItem.UserName || step.User || step.UserName || '';
-                  if (!validUser && infoItem.AssignedUsers && Array.isArray(infoItem.AssignedUsers)) {
-                    validUser = infoItem.AssignedUsers.join(', ');
-                  }
+              });
+            }
+          });
+          return docRows;
+        } catch (err) {
+          console.error(`Error processing doc ${docId}`, err);
+          return [{
+            'DOCID': docId,
+            'Instância': 'ERRO AO BUSCAR HISTÓRICO',
+            'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId)
+          }];
+        } finally {
+          completedCount++;
+          setSearchProgress({ current: completedCount, total: docs.length });
+        }
+      });
 
-                  const validDate = infoItem.DecisionDate || step.StepDate || step.TimeStamp || '';
-                  const validDecision = infoItem.DecisionName || step.DecisionLabel || '';
-                  const stepStartDate = step.StepDate || '';
-
-                  docRows.push({
-                    'Instance GUID': instance.Id,
-                    'DOCID': docId,
-                    'Instância': instance.Name,
-                    'Versão': instance.Version,
-                    'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
-                    'Atividade': step.ActivityName || step.Name,
-                    'Tipo Atividade': step.ActivityType,
-                    'Data Início Tarefa': formatDate(stepStartDate),
-                    'Decisão': validDecision,
-                    'Usuário': validUser,
-                    'Data Decisão': formatDate(validDate),
-                    'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId),
-                    ...docFields
-                  });
-                });
-              }
-            });
-            return docRows;
-          } catch (err) {
-            console.error(`Error processing doc ${docId}`, err);
-            return [{
-              'DOCID': docId,
-              'Instância': 'ERRO AO BUSCAR HISTÓRICO',
-              'Link Documento': docuwareService.getDocumentViewUrl(selectedCabinet, docId)
-            }];
-          }
-        });
-
-        const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach(res => {
-          if (res) allRows.push(...res);
-        });
-
-        setSearchProgress(prev => ({ ...prev, current: Math.min(prev.current + BATCH_SIZE, prev.total) }));
-      }
-
+      const allRows = allRowsResults.flat();
       setRawRows(allRows);
     } catch (err) {
       console.error('Search error:', err);
