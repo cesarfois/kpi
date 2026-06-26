@@ -71,6 +71,7 @@ export const workflowAnalyticsService = {
             }
 
             const response = await analyticsApi.get(`${import.meta.env.BASE_URL || '/'}DocuWare/Platform/Workflow/Instances/DocumentHistory`, {
+                baseURL: '/',
                 params: {
                     fileCabinetId: cabinetId,
                     documentId: docId
@@ -105,7 +106,7 @@ export const workflowAnalyticsService = {
 
                         if (historyUrl) {
                             console.log(`[WorkflowAnalytics] Fetching details: ${historyUrl}`);
-                            const detailResp = await analyticsApi.get(historyUrl);
+                            const detailResp = await analyticsApi.get(historyUrl, { baseURL: '/' });
                             // Attach steps to the instance object, DO NOT flatten yet
                             return {
                                 ...inst,
