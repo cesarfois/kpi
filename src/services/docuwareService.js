@@ -263,7 +263,9 @@ export const docuwareService = {
                 {
                     DialogId: searchDialog.Id,
                     FieldName: fieldName,
-                    ExcludeExternalData: false
+                    ExcludeExternalData: false,
+                    Count: 9999,
+                    Limit: 9999
                 },
                 {
                     params: { dialogId: searchDialog.Id }
