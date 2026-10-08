@@ -331,8 +331,20 @@ export default function WorkflowKpiAnalyticsPage() {
             } else {
               let hasGeneralTask = false;
               steps.forEach(step => {
-                const normalizedType = (step.ActivityType || '').replace(/\s+/g, '').toLowerCase();
-                if (!normalizedType.includes('task')) return;
+                const typeStr = (step.ActivityType || '').toLowerCase();
+                const stepTypeStr = (step.StepType || '').toLowerCase();
+                const infoTypeStr = (step.Info?.Item?.['$type'] || '').toLowerCase();
+
+                const isHumanTask = 
+                  typeStr.includes('task') || 
+                  typeStr.includes('tarefa') || 
+                  typeStr.includes('decision') || 
+                  stepTypeStr.includes('task') || 
+                  stepTypeStr.includes('decision') ||
+                  infoTypeStr.includes('task') ||
+                  infoTypeStr.includes('decision');
+
+                if (!isHumanTask) return;
                 
                 hasGeneralTask = true;
                 const infoItem = step.Info?.Item || {};
