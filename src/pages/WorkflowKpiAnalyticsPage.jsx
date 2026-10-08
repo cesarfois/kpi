@@ -329,9 +329,12 @@ export default function WorkflowKpiAnalyticsPage() {
                 ...docFields
               });
             } else {
+              let hasGeneralTask = false;
               steps.forEach(step => {
                 const normalizedType = (step.ActivityType || '').replace(/\s+/g, '').toLowerCase();
                 if (normalizedType !== 'generaltask') return;
+                
+                hasGeneralTask = true;
                 const infoItem = step.Info?.Item || {};
                 let validUser = infoItem.UserName || step.User || step.UserName || '';
                 if (!validUser && infoItem.AssignedUsers && Array.isArray(infoItem.AssignedUsers)) {
@@ -358,6 +361,19 @@ export default function WorkflowKpiAnalyticsPage() {
                   ...docFields
                 });
               });
+
+              if (!hasGeneralTask) {
+                docRows.push({
+                  'Instance GUID': instance.Id,
+                  'DOCID': docId,
+                  'Instância': instance.Name,
+                  'Versão': instance.Version,
+                  'Iniciado Em': formatDate(instance.StartDate || instance.StartedAt),
+                  'Atividade': '(Sem tarefas de usuário)',
+                  'Link Documento': docuwareService.getDocumentViewUrl(cabinetId, docId),
+                  ...docFields
+                });
+              }
             }
           });
           return docRows;
