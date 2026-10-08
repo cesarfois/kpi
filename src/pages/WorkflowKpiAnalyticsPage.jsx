@@ -332,7 +332,7 @@ export default function WorkflowKpiAnalyticsPage() {
               let hasGeneralTask = false;
               steps.forEach(step => {
                 const normalizedType = (step.ActivityType || '').replace(/\s+/g, '').toLowerCase();
-                if (normalizedType !== 'generaltask') return;
+                if (!normalizedType.includes('task')) return;
                 
                 hasGeneralTask = true;
                 const infoItem = step.Info?.Item || {};
